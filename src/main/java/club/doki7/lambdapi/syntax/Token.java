@@ -7,13 +7,21 @@ import java.util.Objects;
 
 public final class Token {
     public enum Kind {
+        /// 标识符
         IDENT,
+        /// 左括号
         LPAREN,
+        /// 右括号
         RPAREN,
+        /// `λ` 或者 `\`
         LAMBDA,
+        /// `->`, `→` 或者 `.`
         ARROW,
+        /// `*`
         ASTER,
+        /// `Π` 或者 `∀`
         PI,
+        /// `:` 或者 `::`
         COLON
     }
 
