@@ -13,7 +13,7 @@ public class TestTokenize {
         List<Token> expectedTokens = List.of(
                 Token.symbol(Token.Kind.LAMBDA),
                 Token.ident("x"),
-                Token.symbol(Token.Kind.ARROW),
+                Token.symbol(Token.Kind.DOT),
                 Token.ident("x")
         );
         Assertions.assertEquals(expectedTokens, tokens);
@@ -41,7 +41,7 @@ public class TestTokenize {
                 Token.ident("x"),
                 Token.symbol(Token.Kind.COLON),
                 Token.symbol(Token.Kind.ASTER),
-                Token.symbol(Token.Kind.ARROW),
+                Token.symbol(Token.Kind.DOT),
                 Token.ident("x")
         );
         Assertions.assertEquals(expectedTokens, tokens);
@@ -57,7 +57,7 @@ public class TestTokenize {
                 Token.ident("x"),
                 Token.symbol(Token.Kind.COLON),
                 Token.ident("A"),
-                Token.symbol(Token.Kind.ARROW),
+                Token.symbol(Token.Kind.DOT),
                 Token.ident("x"),
                 Token.symbol(Token.Kind.RPAREN),
                 Token.ident("y")
@@ -72,7 +72,7 @@ public class TestTokenize {
         List<Token> expectedTokens = List.of(
                 Token.symbol(Token.Kind.PI),
                 Token.ident("x"),
-                Token.symbol(Token.Kind.ARROW),
+                Token.symbol(Token.Kind.DOT),
                 Token.ident("x")
         );
         Assertions.assertEquals(expectedTokens, tokens);

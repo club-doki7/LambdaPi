@@ -15,11 +15,15 @@ public final class Token {
         RPAREN,
         /// `λ` 或者 `\`
         LAMBDA,
-        /// `->`, `→` 或者 `.`
+        /// `->` 和 `→`
         ARROW,
+        /// `.`
+        DOT,
+        /// `,`
+        COMMA,
         /// `*`
         ASTER,
-        /// `Π` 或者 `∀`
+        /// `Π`, `∀` 或者 `forall`
         PI,
         /// `:` 或者 `::`
         COLON
@@ -77,6 +81,8 @@ public final class Token {
             case RPAREN -> ")";
             case LAMBDA -> "λ";
             case ARROW -> "→";
+            case DOT -> ".";
+            case COMMA -> ",";
             case ASTER -> "*";
             case PI -> "Π";
             case COLON -> ":";
@@ -126,19 +132,48 @@ public final class Token {
                         col++;
                     }
                     case '-' -> {
-                        if (i + 1 < charArray.length && charArray[i + 1] == '>') {
-                            concludeToken();
-                            tokens.add(new Token(Kind.ARROW, "->", line, col));
-                            i++;
-                            col += 2;
-                        } else {
-                            currentToken.append(c);
-                            col++;
+                        if (i + 1 < charArray.length) {
+                            if (charArray[i + 1] == '>') {
+                                concludeToken();
+                                tokens.add(new Token(Kind.ARROW, "->", line, col));
+                                i++;
+                                col += 2;
+                                continue;
+                            } else if (charArray[i + 1] == '-') {
+                                concludeToken();
+                                i += 2;
+                                col += 2;
+                                while (i < charArray.length) {
+                                    char cc = charArray[i];
+                                    if (cc == '\n') {
+                                        line++;
+                                        col = 1;
+                                        break;
+                                    } else {
+                                        i++;
+                                        col++;
+                                    }
+                                }
+                                continue;
+                            }
                         }
+
+                        currentToken.append(c);
+                        col++;
                     }
-                    case '.', '→' -> {
+                    case '→' -> {
                         concludeToken();
                         tokens.add(new Token(Kind.ARROW, String.valueOf(c), line, col));
+                        col++;
+                    }
+                    case '.' -> {
+                        concludeToken();
+                        tokens.add(new Token(Kind.DOT, ".", line, col));
+                        col++;
+                    }
+                    case ',' -> {
+                        concludeToken();
+                        tokens.add(new Token(Kind.COMMA, ",", line, col));
                         col++;
                     }
                     case ':' -> {
@@ -176,6 +211,12 @@ public final class Token {
                 return;
             }
             String lexeme = currentToken.toString();
+            if (lexeme.equals("forall")) {
+                tokens.add(new Token(Kind.PI, lexeme, line, col - lexeme.length()));
+                currentToken.setLength(0);
+                return;
+            }
+
             tokens.add(new Token(Kind.IDENT, lexeme, line, col - lexeme.length()));
             currentToken.setLength(0);
         }
