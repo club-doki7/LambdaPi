@@ -118,8 +118,8 @@ public final class Token {
                         col++;
                     }
                     case '-' -> {
-                        concludeToken();
                         if (i + 1 < charArray.length && charArray[i + 1] == '>') {
+                            concludeToken();
                             tokens.add(new Token(Kind.ARROW, "->", line, col));
                             i++;
                             col += 2;
