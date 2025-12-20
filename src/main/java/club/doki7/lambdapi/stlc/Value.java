@@ -1,17 +1,19 @@
 package club.doki7.lambdapi.stlc;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.function.Function;
 
 public sealed interface Value {
-    record VLam(Function<Value, Value> lam) implements Value {}
+    record VLam(@NotNull Function<Value, Value> lam) implements Value {}
 
     sealed interface VNeutral extends Value permits NFree, NApp {}
 
-    record NFree(Name name) implements VNeutral {}
+    record NFree(@NotNull Name name) implements VNeutral {}
 
-    record NApp(VNeutral func, Value arg) implements VNeutral {}
+    record NApp(@NotNull VNeutral func, @NotNull Value arg) implements VNeutral {}
 
-    static Value vFree(Name name) {
+    static @NotNull Value vFree(@NotNull Name name) {
         return new NFree(name);
     }
 }

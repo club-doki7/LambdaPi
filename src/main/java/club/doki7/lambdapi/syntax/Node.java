@@ -1,14 +1,17 @@
 package club.doki7.lambdapi.syntax;
 
-public sealed interface Node {
-    record Ann(Node term, Node annotation) implements Node {}
-    record Pi(Token param, Node paramType, Node body) implements Node {}
-    record Var(Token name) implements Node {}
-    record Lam(Token param, Node body) implements Node {}
-    record App(Node func, Node arg) implements Node {}
+import org.jetbrains.annotations.NotNull;
 
+public sealed interface Node {
+    record Ann(@NotNull Node term, @NotNull Node annotation) implements Node {}
+    record Pi(@NotNull Token param, @NotNull Node paramType, @NotNull Node body) implements Node {}
+    record Var(@NotNull Token name) implements Node {}
+    record Lam(@NotNull Token param, @NotNull Node body) implements Node {}
+    record App(@NotNull Node func, @NotNull Node arg) implements Node {}
+
+    @NotNull Aster ASTER = Aster.INSTANCE;
     final class Aster implements Node {
-        public static final Aster INSTANCE = new Aster();
+        public static final @NotNull Aster INSTANCE = new Aster();
 
         private Aster() {}
     }
