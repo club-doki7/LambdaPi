@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 /// }
 ///
 /// 规则 3 同时用于 λ<sub>→</sub> 和 λ<sub>Π</sub>，
-/// 因为简单函数类型 `ρ → ρ'` 可以被看作是依值函数类型 `Πx : ρ . ρ'` 的语法糖
+/// 因为简单函数类型 `ρ → ρ'` 可以被看作是依值函数类型 `Π_ : ρ . ρ'` 的语法糖
 public sealed interface Node {
     record Ann(@NotNull Node term, @NotNull Node annotation) implements Node {
         @Override
