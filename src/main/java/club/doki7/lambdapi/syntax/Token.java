@@ -3,6 +3,7 @@ package club.doki7.lambdapi.syntax;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Objects;
 
 public final class Token {
@@ -25,8 +26,14 @@ public final class Token {
         ASTER,
         /// `Π`, `∀` 或者 `forall`
         PI,
-        /// `:` 或者 `::`
-        COLON
+        /// `:`, `::`, `<:`, `∈` 或者 `in`
+        COLON,
+
+        /// 外围语言 (PNode 所定义) 所用的一些关键字
+        KW_AXIOM,
+        KW_CLAIM,
+        DEFUN,
+        KW_SORRY
     }
 
     public final Kind kind;
@@ -34,7 +41,10 @@ public final class Token {
     public final int line;
     public final int col;
 
-    public Token(Kind kind, String lexeme, int line, int col) {
+    public Token(@NotNull Kind kind,
+                 @NotNull String lexeme,
+                 int line,
+                 int col) {
         this.kind = kind;
         this.lexeme = lexeme;
         this.line = line;
@@ -87,6 +97,10 @@ public final class Token {
             case PI -> "Π";
             case COLON -> ":";
             case IDENT -> throw new IllegalArgumentException("IDENT token requires a lexeme");
+            case KW_AXIOM -> "axiom";
+            case KW_CLAIM -> "claim";
+            case DEFUN -> "defun";
+            case KW_SORRY -> "sorry";
         }, -1, -1);
     }
 
@@ -187,6 +201,22 @@ public final class Token {
                             col++;
                         }
                     }
+                    case '∈' -> {
+                        concludeToken();
+                        tokens.add(new Token(Kind.COLON, String.valueOf(c), line, col));
+                        col++;
+                    }
+                    case '<' -> {
+                        if (i + 1 < charArray.length && charArray[i + 1] == ':') {
+                            concludeToken();
+                            tokens.add(new Token(Kind.COLON, "<:", line, col));
+                            i++;
+                            col += 2;
+                        } else {
+                            currentToken.append(c);
+                            col++;
+                        }
+                    }
                     case '*' -> {
                         concludeToken();
                         tokens.add(new Token(Kind.ASTER, "*", line, col));
@@ -211,14 +241,30 @@ public final class Token {
                 return;
             }
             String lexeme = currentToken.toString();
-            if (lexeme.equals("forall")) {
-                tokens.add(new Token(Kind.PI, lexeme, line, col - lexeme.length()));
+            if (KEYWORDS.containsKey(lexeme)) {
+                tokens.add(new Token(KEYWORDS.get(lexeme), lexeme, line, col - lexeme.length()));
                 currentToken.setLength(0);
                 return;
             }
 
             tokens.add(new Token(Kind.IDENT, lexeme, line, col - lexeme.length()));
             currentToken.setLength(0);
+        }
+
+        private static final @NotNull HashMap<@NotNull String, @NotNull Kind> KEYWORDS;
+        static {
+            KEYWORDS = new HashMap<>();
+            KEYWORDS.put("forall", Kind.PI);
+            KEYWORDS.put("in", Kind.COLON);
+            KEYWORDS.put("axiom", Kind.KW_AXIOM);
+            KEYWORDS.put("postulate", Kind.KW_AXIOM);
+            KEYWORDS.put("claim", Kind.KW_CLAIM);
+            KEYWORDS.put("declare", Kind.KW_CLAIM);
+            KEYWORDS.put("defun", Kind.DEFUN);
+            KEYWORDS.put("define", Kind.DEFUN);
+            KEYWORDS.put("sorry", Kind.KW_SORRY);
+            KEYWORDS.put("gomenasai", Kind.KW_SORRY);
+            KEYWORDS.put("QaQ", Kind.KW_SORRY);
         }
     }
 }

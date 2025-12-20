@@ -48,7 +48,7 @@ public sealed interface Node {
                     || paramType instanceof Lam) {
                     return "(" + paramType + ") → " + body;
                 } else {
-                    return paramType + " . " + body;
+                    return paramType + " → " + body;
                 }
             }
         }
