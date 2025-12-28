@@ -2,7 +2,11 @@ package club.doki7.lambdapi.exc;
 
 import club.doki7.lambdapi.syntax.Token;
 
-public sealed class LPiException extends Exception permits ParseException, ElabException {
+public sealed class LPiException extends Exception permits
+        ParseException,
+        ElabException,
+        TypeCheckException
+{
     public final Token location;
     public final String message;
 

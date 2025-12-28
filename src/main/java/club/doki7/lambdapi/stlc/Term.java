@@ -2,16 +2,17 @@ package club.doki7.lambdapi.stlc;
 
 import club.doki7.lambdapi.syntax.Node;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
 public sealed interface Term {
-    @NotNull Node node();
+    @Nullable Node node();
 
     sealed interface Inferable extends Term permits Ann, Bound, Free, App {}
     sealed interface Checkable extends Term permits Inf, Lam {}
 
-    record Ann(@NotNull Node node, @NotNull Checkable term, @NotNull Type annotation)
+    record Ann(@Nullable Node node, @NotNull Checkable term, @NotNull Type annotation)
             implements Inferable
     {
         @Override
@@ -39,7 +40,7 @@ public sealed interface Term {
         }
     }
 
-    record Bound(@NotNull Node node, int index) implements Inferable {
+    record Bound(@Nullable Node node, int index) implements Inferable {
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -59,7 +60,7 @@ public sealed interface Term {
         }
     }
 
-    record Free(@NotNull Node node, @NotNull Name name) implements Inferable {
+    record Free(@Nullable Node node, @NotNull Name name) implements Inferable {
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -79,7 +80,7 @@ public sealed interface Term {
         }
     }
 
-    record App(@NotNull Node node, @NotNull Inferable f, @NotNull Checkable arg)
+    record App(@Nullable Node node, @NotNull Inferable f, @NotNull Checkable arg)
             implements Inferable
     {
         @Override
@@ -119,7 +120,7 @@ public sealed interface Term {
         }
     }
 
-    record Inf(@NotNull Node node, @NotNull Inferable term) implements Checkable {
+    record Inf(@Nullable Node node, @NotNull Inferable term) implements Checkable {
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -139,7 +140,7 @@ public sealed interface Term {
         }
     }
 
-    record Lam(@NotNull Node node, @NotNull Checkable body) implements Checkable {
+    record Lam(@Nullable Node node, @NotNull Checkable body) implements Checkable {
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
