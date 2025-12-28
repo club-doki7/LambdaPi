@@ -9,12 +9,17 @@ public sealed interface ConsList<T> {
         INSTANCE;
 
         @Override
-        public String toString() {
-            return "Nil";
+        public @NotNull String toString() {
+            return "nil";
         }
     }
 
-    record Cons<T>(T head, ConsList<T> tail) implements ConsList<T> {}
+    record Cons<T>(T head, ConsList<T> tail) implements ConsList<T> {
+        @Override
+        public @NotNull String toString() {
+            return "(" + head + ", " + tail + ")";
+        }
+    }
 
     static <T> @NotNull ConsList<T> nil() {
         // noinspection unchecked

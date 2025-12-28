@@ -13,10 +13,11 @@ public final class Eval {
     }
 
     public static Term reify(Value value) {
-        return reify(value, 0);
+        return reify(0, value);
     }
 
     private static Value eval(Term term, ConsList<Value> env, Map<String, Value> globals) {
+        System.out.println("  evaluating term: " + term + " with env: " + env);
         return switch (term) {
             case Term.Ann(Node _, Term t, Type _) -> eval(t, env, globals);
             case Term.Free(Node _, Name name) -> {
@@ -53,23 +54,20 @@ public final class Eval {
         };
     }
 
-    private static @NotNull Term.Checkable reify(Value value, int depth) {
+    private static Term.@NotNull Checkable reify(int depth, Value value) {
         return switch (value) {
             case Value.VLam(Function<Value, Value> lam) -> new Term.Lam(
                     null,
-                    reify(
-                            lam.apply(Value.vFree(new Name.Local(depth))),
-                            depth + 1
-                    )
+                    reify(depth + 1, lam.apply(Value.vFree(new Name.Quote(depth))))
             );
             case Value.VNeutral n -> new Term.Inf(
                     null,
-                    neutralReify(n, depth)
+                    neutralReify(depth, n)
             );
         };
     }
 
-    private static Term.Inferable neutralReify(Value.VNeutral n, int depth) {
+    private static Term.Inferable neutralReify(int depth, Value.VNeutral n) {
         return switch (n) {
             case Value.NFree(Name name) -> {
                 if (name instanceof Name.Quote(int k)) {
@@ -80,8 +78,8 @@ public final class Eval {
             }
             case Value.NApp(Value.VNeutral func, Value arg) -> new Term.App(
                     null,
-                    neutralReify(func, depth),
-                    reify(arg, depth)
+                    neutralReify(depth, func),
+                    reify(depth, arg)
             );
         };
     }

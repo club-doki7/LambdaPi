@@ -76,7 +76,7 @@ public sealed interface Term {
 
         @Override
         public @NotNull String toString() {
-            return name.toString();
+            return "Free(" + name + ")";
         }
     }
 
