@@ -7,17 +7,19 @@ Yet another (modern) Java implementation of the famous [LambdaPi.pdf](https://ww
 - [ ] Java implementation
   - [x] Tokenize
   - [x] Syntax
-    - [ ] Pretty printing
-  - [ ] Parse
-  - [ ] STLC (λ<sub>→</sub>)
+    - [x] Pretty printing
+  - [x] Parse
+  - [x] STLC (λ<sub>→</sub>)
     - [x] Representation
-      - [ ] Pretty printing
-    - [ ] Evaluator
-    - [ ] Type checker
-    - [ ] Quoting
+    - [x] Evaluator
+    - [x] Type checker
+    - [x] Quoting
   - [ ] DTLC (λ<sub>Π</sub>)
     - [ ] Representation
     - [ ] Evaluator + Type checker
+    - [ ] Quoting
+  - [ ] Natural number
+  - [ ] Vector
 - [ ] Python implementation
   - This is a garbage programming language, but I think there might should be one.
 

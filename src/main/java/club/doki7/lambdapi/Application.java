@@ -13,7 +13,6 @@ import club.doki7.lambdapi.syntax.Token;
 import java.util.*;
 
 public final class Application {
-    // ANSI 控制序列
     private static final String ANSI_RESET = "\u001B[0m";
     private static final String ANSI_RED = "\u001B[31m";
     private static final String ANSI_GREEN = "\u001B[32m";
