@@ -150,16 +150,9 @@ public final class InferCheck {
                     throw new TypeCheckException(location, strName + " is not a type");
                 }
             }
-            case Type.Free(Name.Local _) -> {
-                throw new IllegalStateException("Unexpected local in type checking phase");
-//                Pair<Name.Local, Kind> binding = ctx.findFirst(p -> p.first().index() == index);
-//                if (binding == null) {
-//                    throw new TypeCheckException(location, "Unbound local type variable L" + index);
-//                }
-//                if (!(binding.second() instanceof HasKind)) {
-//                    throw new TypeCheckException(location, "L" + index + " is not a type");
-//                }
-            }
+            case Type.Free(Name.Local _) -> throw new IllegalStateException(
+                    "Unexpected local in type checking phase"
+            );
             case Type.Free(Name.Quote _) -> throw new IllegalStateException(
                     "Unexpected quote in type checking phase"
             );
