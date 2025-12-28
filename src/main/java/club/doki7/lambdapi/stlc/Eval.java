@@ -17,7 +17,6 @@ public final class Eval {
     }
 
     private static Value eval(Term term, ConsList<Value> env, Map<String, Value> globals) {
-        System.out.println("  evaluating term: " + term + " with env: " + env);
         return switch (term) {
             case Term.Ann(Node _, Term t, Type _) -> eval(t, env, globals);
             case Term.Free(Node _, Name name) -> {

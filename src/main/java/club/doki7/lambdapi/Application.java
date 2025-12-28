@@ -10,11 +10,17 @@ import club.doki7.lambdapi.syntax.PNode;
 import club.doki7.lambdapi.syntax.Parse;
 import club.doki7.lambdapi.syntax.Token;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 public final class Application {
+    // ANSI 控制序列
+    private static final String ANSI_RESET = "\u001B[0m";
+    private static final String ANSI_RED = "\u001B[31m";
+    private static final String ANSI_GREEN = "\u001B[32m";
+    private static final String ANSI_YELLOW = "\u001B[33m";
+    private static final String ANSI_BLUE = "\u001B[34m";
+    private static final String ANSI_PURPLE = "\u001B[35m";
+
     static void main() {
         HashMap<String, Value> env = new HashMap<>();
         HashMap<String, InferCheck.Kind> typeContext = new HashMap<>();
@@ -25,39 +31,68 @@ public final class Application {
         System.out.println("  defun <name> = <expr>     - Define function");
         System.out.println("  check <expr>              - Type check and evaluate expression");
         System.out.println("  <expr>                    - Type check and evaluate expression");
-        System.out.println("  :quit                     - Exit REPL");
+        System.out.println("  :env                      - Show current environment and type context");
+        System.out.println("  :clear, :cls              - Clear environment and type context");
+        System.out.println("  :quit, :q                 - Exit REPL");
         System.out.println();
 
         Scanner scanner = new Scanner(System.in);
 
-        while (true) {
-            System.out.print("> ");
+        loop: while (true) {
+            System.out.print(ANSI_BLUE + "» " + ANSI_RESET);
             if (!scanner.hasNextLine()) {
                 break;
             }
 
             String line = scanner.nextLine().trim();
 
-            if (line.isEmpty()) {
-                continue;
-            }
-
-            if (line.equals(":quit") || line.equals(":q")) {
-                System.out.println("Goodbye!");
-                break;
+            switch (line) {
+                case "":
+                    continue;
+                case ":quit":
+                case ":q":
+                    break loop;
+                case ":clear":
+                case ":cls":
+                    env.clear();
+                    typeContext.clear();
+                    System.out.println(ANSI_GREEN + "You got to put the past behind you before you can move on." + ANSI_RESET);
+                    continue;
+                case ":env":
+                    if (!env.isEmpty()) {
+                        System.out.println(ANSI_YELLOW + "Current Environment:" + ANSI_RESET);
+                        for (Map.Entry<String, Value> entry : env.entrySet()) {
+                            String name = entry.getKey();
+                            InferCheck.Kind kind = typeContext.get(name);
+                            System.out.println(ANSI_GREEN + "  " + name + " " + kind + ANSI_RESET);
+                        }
+                    }
+                    if (!typeContext.isEmpty()) {
+                        System.out.println(ANSI_YELLOW + "Current Type Context:" + ANSI_RESET);
+                        for (Map.Entry<String, InferCheck.Kind> entry : typeContext.entrySet()) {
+                            String name = entry.getKey();
+                            InferCheck.Kind kind = entry.getValue();
+                            if (!env.containsKey(name)) {
+                                System.out.println(ANSI_GREEN + "  " + name + " " + kind + ANSI_RESET);
+                            }
+                        }
+                    }
+                    continue;
             }
 
             try {
                 processInput(line, env, typeContext);
             } catch (LPiException e) {
-                System.err.println("Error: " + e.getMessage());
+                System.out.println(ANSI_RED + "Error: " + e.getMessage() + ANSI_RESET);
             } catch (Exception e) {
-                System.err.println("Unexpected error: " + e.getMessage());
+                System.out.println(ANSI_RED + "Unexpected error: " + e.getMessage() + ANSI_RESET);
                 e.printStackTrace();
             }
         }
 
         scanner.close();
+        System.out.println(ANSI_YELLOW + "Man! Hahaha... what can I say? Mamba out." + ANSI_RESET);
+        System.out.println(ANSI_PURPLE + "I'll tell you all about it when I see you again." + ANSI_RESET);
     }
 
     private static void processInput(
@@ -65,21 +100,24 @@ public final class Application {
             Map<String, Value> env,
             Map<String, InferCheck.Kind> typeContext
     ) throws ParseException, ElabException, TypeCheckException {
-        var tokens = Token.tokenize(input);
+        ArrayList<Token> tokens = Token.tokenize(input);
+        if (tokens.isEmpty()) {
+            return;
+        }
 
-        // 尝试解析为声明
-        try {
+        Token.Kind firstTokenKind = tokens.getFirst().kind;
+        if (firstTokenKind != Token.Kind.KW_AXIOM
+            && firstTokenKind != Token.Kind.KW_DEFUN
+            && firstTokenKind != Token.Kind.KW_CHECK) {
+            Node expr = Parse.parseExpr(tokens);
+            checkAndEval(expr, env, typeContext);
+        } else {
             PNode program = Parse.parseProgram(tokens);
             if (program instanceof PNode.Program(var items)) {
                 for (PNode item : items) {
                     processDeclaration(item, env, typeContext);
                 }
             }
-        } catch (ParseException e) {
-            // 如果解析为声明失败，尝试解析为表达式
-            tokens = Token.tokenize(input);
-            Node expr = Parse.parseExpr(tokens);
-            checkAndEval(expr, env, typeContext);
         }
     }
 
@@ -93,7 +131,6 @@ public final class Application {
                 if (typeNode instanceof Node.Aster) {
                     for (Token name : names) {
                         typeContext.put(name.lexeme, new InferCheck.HasKind());
-                        System.out.println(name.lexeme + " : *");
                     }
                 } else {
                     Type type = Elab.elabType(typeNode);
@@ -101,7 +138,6 @@ public final class Application {
                     for (Token name : names) {
                         env.put(name.lexeme, Value.vFree(new Name.Global(name.lexeme)));
                         typeContext.put(name.lexeme, new InferCheck.HasType(type));
-                        System.out.println(name.lexeme + " : " + type);
                     }
                 }
             }
@@ -114,11 +150,9 @@ public final class Application {
                 typeContext.put(name.lexeme, new InferCheck.HasType(type));
 
                 Term normalForm = Eval.reify(value);
-                System.out.println(name.lexeme + " : " + type + " = " + normalForm);
+                System.out.println(ANSI_GREEN + name.lexeme + " : " + type + " = " + normalForm + ANSI_RESET);
             }
-            case PNode.Check(Node termNode) -> {
-                checkAndEval(termNode, env, typeContext);
-            }
+            case PNode.Check(Node termNode) -> checkAndEval(termNode, env, typeContext);
             case PNode.Program(var items) -> {
                 for (PNode item : items) {
                     processDeclaration(item, env, typeContext);
@@ -137,6 +171,6 @@ public final class Application {
         Value value = Eval.eval(term, env);
         Term normalForm = Eval.reify(value);
 
-        System.out.println(normalForm + " : " + type);
+        System.out.println(ANSI_GREEN + normalForm + " : " + type + ANSI_RESET);
     }
 }

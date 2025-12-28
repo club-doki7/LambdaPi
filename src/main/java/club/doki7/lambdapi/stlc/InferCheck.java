@@ -17,14 +17,14 @@ public final class InferCheck {
     public record HasKind() implements Kind {
         @Override
         public @NotNull String toString() {
-            return ":: *";
+            return ": *";
         }
     }
 
     public record HasType(@NotNull Type type) implements Kind {
         @Override
         public @NotNull String toString() {
-            return ":: " + type;
+            return ": " + type;
         }
     }
 
