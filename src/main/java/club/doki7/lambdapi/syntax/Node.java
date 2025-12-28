@@ -18,7 +18,14 @@ import org.jetbrains.annotations.TestOnly;
 /// 规则 3 同时用于 λ<sub>→</sub> 和 λ<sub>Π</sub>，
 /// 因为简单函数类型 `ρ → ρ'` 可以被看作是依值函数类型 `Π_ : ρ . ρ'` 的语法糖
 public sealed interface Node {
+    @NotNull Token location();
+
     record Ann(@NotNull Node term, @NotNull Node annotation) implements Node {
+        @Override
+        public @NotNull Token location() {
+            return term.location();
+        }
+
         @Override
         public @NotNull String toString() {
             if (term instanceof Var || term instanceof Aster) {
@@ -30,6 +37,11 @@ public sealed interface Node {
     }
 
     record Aster(@NotNull Token aster) implements Node {
+        @Override
+        public @NotNull Token location() {
+            return aster;
+        }
+
         @TestOnly
         public Aster() {
             this(Token.symbol(Token.Kind.ASTER));
@@ -44,6 +56,11 @@ public sealed interface Node {
     record Pi(@Nullable Token param, @NotNull Node paramType, @NotNull Node body)
             implements Node
     {
+        @Override
+        public @NotNull Token location() {
+            return (param != null) ? param : paramType.location();
+        }
+
         @TestOnly
         public Pi(@Nullable String param, @NotNull Node paramType, @NotNull Node body) {
             Token paramToken = (param != null) ? Token.ident(param) : null;
@@ -67,6 +84,11 @@ public sealed interface Node {
     }
 
     record Var(@NotNull Token name) implements Node {
+        @Override
+        public @NotNull Token location() {
+            return name;
+        }
+
         @TestOnly
         public Var(@NotNull String name) {
             this(Token.ident(name));
@@ -79,6 +101,11 @@ public sealed interface Node {
     }
 
     record App(@NotNull Node func, @NotNull Node arg) implements Node {
+        @Override
+        public @NotNull Token location() {
+            return func.location();
+        }
+
         @Override
         public @NotNull String toString() {
             StringBuilder sb = new StringBuilder();
@@ -101,6 +128,11 @@ public sealed interface Node {
     }
 
     record Lam(@NotNull Token param, @NotNull Node body) implements Node {
+        @Override
+        public @NotNull Token location() {
+            return param;
+        }
+
         @TestOnly
         public Lam(@NotNull String param, @NotNull Node body) {
             this(Token.ident(param), body);

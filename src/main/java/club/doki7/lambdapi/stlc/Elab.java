@@ -41,13 +41,12 @@ public final class Elab {
             case Node.Pi pi -> {
                 if (pi.param() != null) {
                     throw new ElabException(
-                            pi.param(),
+                            pi.location(),
                             "STLC does not support dependent function types (Π/∀)"
                     );
                 } else {
-                    Token location = extractToken(pi.paramType());
                     throw new ElabException(
-                            location,
+                            pi.location(),
                             "In STLC, function arrow is not allowed at term level"
                     );
                 }
@@ -85,26 +84,20 @@ public final class Elab {
                 Type out = elabType(body);
                 yield new Type.Fun(in, out);
             }
-            case Node.Ann ann -> {
-                Token location = extractToken(ann.term());
-                throw new ElabException(
-                        location,
-                        "In STLC, type annotation is not allowed at type/kind level"
-                );
-            }
-            case Node.App app -> {
-                Token location = extractToken(app.func());
-                throw new ElabException(
-                        location,
-                        "In STLC, function application is not allowed at type/kind level"
-                );
-            }
+            case Node.Ann ann -> throw new ElabException(
+                    ann.location(),
+                    "In STLC, type annotation is not allowed at type/kind level"
+            );
+            case Node.App app -> throw new ElabException(
+                    app.location(),
+                    "In STLC, function application is not allowed at type/kind level"
+            );
             case Node.Lam lam -> throw new ElabException(
-                    lam.param(),
+                    lam.location(),
                     "In STLC, lambda expression is not allowed at type/kind level"
             );
-            case Node.Aster(Token aster) -> throw new ElabException(
-                    aster,
+            case Node.Aster aster -> throw new ElabException(
+                    aster.location(),
                     "In STLC, type universes (*) are not supported, unless in axiom declarations"
             );
         };
@@ -117,16 +110,5 @@ public final class Elab {
             }
         }
         return -1;
-    }
-
-    private static Token extractToken(Node node) {
-        return switch (node) {
-            case Node.Ann ann -> extractToken(ann.term());
-            case Node.Aster(Token aster) -> aster;
-            case Node.Pi pi -> pi.param() != null ? pi.param() : extractToken(pi.paramType());
-            case Node.Var(Token name) -> name;
-            case Node.App app -> extractToken(app.func());
-            case Node.Lam(Token param, Node _) -> param;
-        };
     }
 }
