@@ -15,7 +15,7 @@ import java.util.Set;
 /// {@snippet lang="bnf" :
 ///program ::= declaration*
 ///
-/// declaration ::= 'axiom' identifier in expr
+/// declaration ::= 'axiom' identifier-list in expr
 ///              | 'defun' identifier '=' expr
 ///              | 'check' expr
 ///
@@ -70,10 +70,10 @@ public final class Parse {
         Token token = expectConsume(DECL_KINDS);
 
         if (token.kind == Token.Kind.KW_AXIOM) {
-            Token name = expectConsume(Token.Kind.IDENT);
+            List<Token> names = parseIdentifierList();
             expectConsume(Token.Kind.COLON);
             Node type = parseExpr();
-            return new PNode.Axiom(name, type);
+            return new PNode.Axiom(names, type);
         } else if (token.kind == Token.Kind.KW_DEFUN) {
             Token name = expectConsume(Token.Kind.IDENT);
             expectConsume(Token.Kind.EQ);

@@ -6,15 +6,23 @@ import org.jetbrains.annotations.TestOnly;
 import java.util.List;
 
 public sealed interface PNode {
-    record Axiom(@NotNull Token name, @NotNull Node type) implements PNode {
+    record Axiom(@NotNull List<@NotNull Token> names, @NotNull Node type) implements PNode {
         @TestOnly
         public Axiom(@NotNull String name, @NotNull Node type) {
-            this(Token.ident(name), type);
+            this(List.of(Token.ident(name)), type);
         }
 
         @Override
         public @NotNull String toString() {
-            return "axiom " + name + " : " + type;
+            StringBuilder sb = new StringBuilder("axiom ");
+            for (int i = 0; i < names.size(); i++) {
+                sb.append(names.get(i));
+                if (i < names.size() - 1) {
+                    sb.append(", ");
+                }
+            }
+            sb.append(" : ").append(type);
+            return sb.toString();
         }
     }
 

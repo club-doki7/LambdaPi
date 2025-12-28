@@ -14,6 +14,39 @@ public final class Elab {
         return elabInferable(node, new ArrayList<>());
     }
 
+    public static Type elabType(Node node) throws ElabException {
+        return switch (node) {
+            case Node.Var(Token name) -> new Type.Free(new Name.Global(name.lexeme));
+            case Node.Pi(Token param, Node paramType, Node body) -> {
+                if (param != null) {
+                    throw new ElabException(
+                            param,
+                            "STLC does not support dependent function types (Π/∀)"
+                    );
+                }
+                Type in = elabType(paramType);
+                Type out = elabType(body);
+                yield new Type.Fun(in, out);
+            }
+            case Node.Ann ann -> throw new ElabException(
+                    ann.location(),
+                    "In STLC, type annotation is not allowed at type/kind level"
+            );
+            case Node.App app -> throw new ElabException(
+                    app.location(),
+                    "In STLC, function application is not allowed at type/kind level"
+            );
+            case Node.Lam lam -> throw new ElabException(
+                    lam.location(),
+                    "In STLC, lambda expression is not allowed at type/kind level"
+            );
+            case Node.Aster aster -> throw new ElabException(
+                    aster.location(),
+                    "In STLC, type universes (*) are not supported, unless in axiom declarations"
+            );
+        };
+    }
+
     private static Term.Inferable elabInferable(Node node, List<String> ctx) throws ElabException {
         return switch (node) {
             case Node.Ann(Node term, Node annotation) -> {
@@ -68,39 +101,6 @@ public final class Elab {
 
         Term.Inferable inf = elabInferable(node, ctx);
         return new Term.Inf(node, inf);
-    }
-
-    private static Type elabType(Node node) throws ElabException {
-        return switch (node) {
-            case Node.Var(Token name) -> new Type.Free(new Name.Global(name.lexeme));
-            case Node.Pi(Token param, Node paramType, Node body) -> {
-                if (param != null) {
-                    throw new ElabException(
-                            param,
-                            "STLC does not support dependent function types (Π/∀)"
-                    );
-                }
-                Type in = elabType(paramType);
-                Type out = elabType(body);
-                yield new Type.Fun(in, out);
-            }
-            case Node.Ann ann -> throw new ElabException(
-                    ann.location(),
-                    "In STLC, type annotation is not allowed at type/kind level"
-            );
-            case Node.App app -> throw new ElabException(
-                    app.location(),
-                    "In STLC, function application is not allowed at type/kind level"
-            );
-            case Node.Lam lam -> throw new ElabException(
-                    lam.location(),
-                    "In STLC, lambda expression is not allowed at type/kind level"
-            );
-            case Node.Aster aster -> throw new ElabException(
-                    aster.location(),
-                    "In STLC, type universes (*) are not supported, unless in axiom declarations"
-            );
-        };
     }
 
     private static int findInContext(@NotNull String name, @NotNull List<String> ctx) {

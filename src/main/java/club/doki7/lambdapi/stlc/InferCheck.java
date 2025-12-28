@@ -35,6 +35,14 @@ public final class InferCheck {
         return infer(0, ConsList.nil(), globals, inferable);
     }
 
+    public static void checkKind(
+            Token location,
+            Map<String, Kind> globals,
+            Type type
+    ) throws TypeCheckException {
+        checkKind(location, ConsList.nil(), globals, type);
+    }
+
     private static @NotNull Type infer(
             int depth,
             ConsList<Pair<Name.Local, Kind>> ctx,
