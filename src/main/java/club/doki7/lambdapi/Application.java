@@ -29,13 +29,14 @@ public final class Application {
 
         System.out.println("=== Simply Typed Lambda Calculus ===");
         System.out.println("Commands:");
-        System.out.println("  axiom <name> : <type>     - Declare axiom with type");
-        System.out.println("  defun <name> = <expr>     - Define function");
-        System.out.println("  check <expr>              - Type check and evaluate expression");
-        System.out.println("  <expr>                    - Type check and evaluate expression");
-        System.out.println("  :env                      - Show current environment and type context");
-        System.out.println("  :clear, :cls              - Clear environment and type context");
-        System.out.println("  :quit, :q                 - Exit REPL");
+        System.out.println("  axiom <type> : *         - Introduce type variable");
+        System.out.println("  axiom <name> : <type>    - Postulate axiom of type");
+        System.out.println("  defun <name> = <expr>    - Define function");
+        System.out.println("  check <expr>             - Type check and evaluate expression");
+        System.out.println("  <expr>                   - Type check and evaluate expression");
+        System.out.println("  :env                     - Show current environment and type context");
+        System.out.println("  :clear, :cls             - Clear environment and type context");
+        System.out.println("  :quit, :q                - Exit REPL");
         System.out.println();
 
         Scanner scanner = new Scanner(System.in);
