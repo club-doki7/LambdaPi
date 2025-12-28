@@ -16,6 +16,7 @@ import java.util.Set;
 ///
 /// declaration ::= 'axiom' identifier in expr
 ///              | 'defun' identifier '=' expr
+///              | 'check' expr
 ///
 /// expr ::= expr in arrow-expr
 ///        | arrow-expr
@@ -77,21 +78,23 @@ public final class Parse {
     }
 
     private @NotNull PNode parseDeclaration() throws ParseException {
-        if (check(Token.Kind.KW_AXIOM)) {
-            consume();
+        Token token = expectConsume(DECL_KINDS);
+
+        if (token.kind == Token.Kind.KW_AXIOM) {
             Token name = expectConsume(Token.Kind.IDENT);
             expectConsume(Token.Kind.COLON);
             Node type = parseExpr();
             return new PNode.Axiom(name, type);
-        } else if (check(Token.Kind.KW_DEFUN)) {
-            consume();
+        } else if (token.kind == Token.Kind.KW_DEFUN) {
             Token name = expectConsume(Token.Kind.IDENT);
             expectConsume(Token.Kind.EQ);
             Node value = parseExpr();
             return new PNode.Defun(name, value);
+        } else if (token.kind == Token.Kind.KW_CHECK) {
+            Node term = parseExpr();
+            return new PNode.Check(term);
         } else {
-            Node expr = parseExpr();
-            return new PNode.Expr(expr);
+            throw new IllegalStateException("Unexpected declaration kind: " + token.kind);
         }
     }
 
@@ -224,7 +227,7 @@ public final class Parse {
         return t;
     }
 
-    private void expectConsume(Set<Token.Kind> kinds) throws ParseException {
+    private Token expectConsume(Set<Token.Kind> kinds) throws ParseException {
         Token t = consume();
         String kindsString = buildKindsString(kinds);
         if (t == null) {
@@ -234,6 +237,7 @@ public final class Parse {
         if (!kinds.contains(t.kind)) {
             throw new ParseException(t, "Expected one of " + kindsString + " but got " + t.kind);
         }
+        return t;
     }
 
     private String buildKindsString(Set<Token.Kind> kinds) {
@@ -277,6 +281,12 @@ public final class Parse {
 
     private final @NotNull ArrayList<Token> tokens;
     private int pos;
+
+    private static final @NotNull Set<Token.Kind> DECL_KINDS = Set.of(
+            Token.Kind.KW_AXIOM,
+            Token.Kind.KW_DEFUN,
+            Token.Kind.KW_CHECK
+    );
 
     private static final @NotNull Set<Token.Kind> GENERIC_ARROW_KINDS = Set.of(
             Token.Kind.ARROW,

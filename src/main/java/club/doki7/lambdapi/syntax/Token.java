@@ -34,7 +34,8 @@ public final class Token {
 
         /// 外围语言 (PNode 所定义) 所用的一些关键字
         KW_AXIOM,
-        KW_DEFUN;
+        KW_DEFUN,
+        KW_CHECK;
 
         @Override
         public @NotNull String toString() {
@@ -52,6 +53,7 @@ public final class Token {
                 case EQ -> "=";
                 case KW_AXIOM -> "axiom";
                 case KW_DEFUN -> "defun";
+                case KW_CHECK -> "check";
             };
         }
     }
@@ -122,6 +124,7 @@ public final class Token {
             case IDENT -> throw new IllegalArgumentException("IDENT token requires a lexeme");
             case KW_AXIOM -> "axiom";
             case KW_DEFUN -> "defun";
+            case KW_CHECK -> "check";
         }, -1, -1);
     }
 
@@ -287,6 +290,7 @@ public final class Token {
             KEYWORDS.put("defun", Kind.KW_DEFUN);
             KEYWORDS.put("define", Kind.KW_DEFUN);
             KEYWORDS.put("let", Kind.KW_DEFUN);
+            KEYWORDS.put("check", Kind.KW_CHECK);
         }
     }
 }

@@ -30,7 +30,7 @@ public sealed interface PNode {
         }
     }
 
-    record Expr(@NotNull Node term) implements PNode {
+    record Check(@NotNull Node term) implements PNode {
         @Override
         public @NotNull String toString() {
             return term.toString();
