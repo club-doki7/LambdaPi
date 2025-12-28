@@ -40,7 +40,27 @@ public final class InferCheck {
             Map<String, Kind> globals,
             Type type
     ) throws TypeCheckException {
-        checkKind(location, ConsList.nil(), globals, type);
+        switch (type) {
+            case Type.Free(Name.Global(String strName)) -> {
+                @Nullable Kind kind = globals.get(strName);
+                if (kind == null) {
+                    throw new TypeCheckException(location, "Undefined type identifier " + strName);
+                }
+                if (!(kind instanceof HasKind)) {
+                    throw new TypeCheckException(location, strName + " is not a type");
+                }
+            }
+            case Type.Free(Name.Local _) -> throw new IllegalStateException(
+                    "Unexpected local in type checking phase"
+            );
+            case Type.Free(Name.Quote _) -> throw new IllegalStateException(
+                    "Unexpected quote in type checking phase"
+            );
+            case Type.Fun(Type in, Type out) -> {
+                checkKind(location, globals, in);
+                checkKind(location, globals, out);
+            }
+        }
     }
 
     private static @NotNull Type infer(
@@ -51,7 +71,7 @@ public final class InferCheck {
     ) throws TypeCheckException {
         switch (inferable) {
             case Term.Ann(Node node, Term.Checkable term, Type annotation) -> {
-                checkKind(Objects.requireNonNull(node).location(), ctx, globals, annotation);
+                checkKind(Objects.requireNonNull(node).location(), globals, annotation);
                 check(depth, ctx, globals, term, annotation);
                 return annotation;
             }
@@ -130,35 +150,6 @@ public final class InferCheck {
                 var newCtx = ConsList.cons(new Pair<>(new Name.Local(depth), new HasType(in)), ctx);
                 Term.Checkable newBody = subst(0, new Term.Free(node, new Name.Local(depth)), body);
                 check(depth + 1, newCtx, globals, newBody, out);
-            }
-        }
-    }
-
-    private static void checkKind(
-            Token location,
-            ConsList<Pair<Name.Local, Kind>> ctx,
-            Map<String, Kind> globals,
-            Type type
-    ) throws TypeCheckException {
-        switch (type) {
-            case Type.Free(Name.Global(String strName)) -> {
-                @Nullable Kind kind = globals.get(strName);
-                if (kind == null) {
-                    throw new TypeCheckException(location, "Undefined type identifier " + strName);
-                }
-                if (!(kind instanceof HasKind)) {
-                    throw new TypeCheckException(location, strName + " is not a type");
-                }
-            }
-            case Type.Free(Name.Local _) -> throw new IllegalStateException(
-                    "Unexpected local in type checking phase"
-            );
-            case Type.Free(Name.Quote _) -> throw new IllegalStateException(
-                    "Unexpected quote in type checking phase"
-            );
-            case Type.Fun(Type in, Type out) -> {
-                checkKind(location, ctx, globals, in);
-                checkKind(location, ctx, globals, out);
             }
         }
     }
