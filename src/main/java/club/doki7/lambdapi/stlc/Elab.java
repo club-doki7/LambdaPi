@@ -34,15 +34,28 @@ public final class Elab {
                 Term.Checkable elabArg = elabCheckable(arg, ctx);
                 yield new Term.App(node, elabFunc, elabArg);
             }
-            case Node.Lam lam -> throw new ElabException(lam.param(), "In STLC, lambda expression must be annotated");
+            case Node.Lam lam -> throw new ElabException(
+                    lam.param(),
+                    "In STLC, lambda expression must be annotated"
+            );
             case Node.Pi pi -> {
                 if (pi.param() != null) {
-                    throw new ElabException(pi.param(), "STLC does not support dependent function types (Π/∀)");
+                    throw new ElabException(
+                            pi.param(),
+                            "STLC does not support dependent function types (Π/∀)"
+                    );
+                } else {
+                    Token location = extractToken(pi.paramType());
+                    throw new ElabException(
+                            location,
+                            "In STLC, function arrow is not allowed at term level"
+                    );
                 }
-                Token location = extractToken(pi.paramType());
-                throw new ElabException(location, "In STLC, function arrow is not allowed at term level");
             }
-            case Node.Aster(Token aster) -> throw new ElabException(aster, "STLC does not support type universes (*)");
+            case Node.Aster(Token aster) -> throw new ElabException(
+                    aster,
+                    "STLC does not support type universes (*)"
+            );
         };
     }
 
@@ -63,7 +76,10 @@ public final class Elab {
             case Node.Var(Token name) -> new Type.Free(new Name.Global(name.lexeme));
             case Node.Pi(Token param, Node paramType, Node body) -> {
                 if (param != null) {
-                    throw new ElabException(param, "STLC does not support dependent function types (Π/∀)");
+                    throw new ElabException(
+                            param,
+                            "STLC does not support dependent function types (Π/∀)"
+                    );
                 }
                 Type in = elabType(paramType);
                 Type out = elabType(body);
