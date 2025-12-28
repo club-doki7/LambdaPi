@@ -19,6 +19,9 @@ public final class Application {
     private static final String ANSI_YELLOW = "\u001B[33m";
     private static final String ANSI_BLUE = "\u001B[34m";
     private static final String ANSI_PURPLE = "\u001B[35m";
+    private static final String ANSI_CYAN = "\u001B[36m";
+    private static final String ANSI_BOLD = "\u001B[1m";
+    private static final String ANSI_ITALIC = "\u001B[3m";
 
     static void main() {
         HashMap<String, Value> env = new HashMap<>();
@@ -38,7 +41,7 @@ public final class Application {
         Scanner scanner = new Scanner(System.in);
 
         loop: while (true) {
-            System.out.print(ANSI_BLUE + "» " + ANSI_RESET);
+            System.out.print(ANSI_BLUE + ANSI_BOLD + "» " + ANSI_RESET);
             if (!scanner.hasNextLine()) {
                 break;
             }
@@ -55,26 +58,30 @@ public final class Application {
                 case ":cls":
                     env.clear();
                     typeContext.clear();
-                    System.out.println(ANSI_GREEN + "You got to put the past behind you before you can move on." + ANSI_RESET);
+                    System.out.println(
+                            ANSI_GREEN
+                            + "You got to put the past behind you before you can move on."
+                            + ANSI_RESET
+                    );
                     continue;
                 case ":env":
                     if (!env.isEmpty()) {
-                        System.out.println(ANSI_YELLOW + "Current Environment:" + ANSI_RESET);
                         for (Map.Entry<String, Value> entry : env.entrySet()) {
                             String name = entry.getKey();
+                            Value value = entry.getValue();
                             InferCheck.Kind kind = typeContext.get(name);
-                            System.out.println(ANSI_GREEN + "  " + name + " " + kind + ANSI_RESET);
+                            boolean isAxiom = value instanceof Value.NFree;
+                            System.out.println(
+                                    (isAxiom ? ANSI_ITALIC + ANSI_CYAN : ANSI_GREEN)
+                                    + "  "
+                                    + name
+                                    + " "
+                                    + kind
+                                    + ANSI_RESET
+                            );
                         }
-                    }
-                    if (!typeContext.isEmpty()) {
-                        System.out.println(ANSI_YELLOW + "Current Type Context:" + ANSI_RESET);
-                        for (Map.Entry<String, InferCheck.Kind> entry : typeContext.entrySet()) {
-                            String name = entry.getKey();
-                            InferCheck.Kind kind = entry.getValue();
-                            if (!env.containsKey(name)) {
-                                System.out.println(ANSI_GREEN + "  " + name + " " + kind + ANSI_RESET);
-                            }
-                        }
+                    } else {
+                        System.out.println(ANSI_GREEN + "Environment is empty." + ANSI_RESET);
                     }
                     continue;
             }
@@ -90,8 +97,12 @@ public final class Application {
         }
 
         scanner.close();
-        System.out.println(ANSI_YELLOW + "Man! Hahaha... what can I say? Mamba out." + ANSI_RESET);
-        System.out.println(ANSI_PURPLE + "I'll tell you all about it when I see you again." + ANSI_RESET);
+        System.out.println(ANSI_YELLOW
+                           + "Man! Hahaha... what can I say? Mamba out."
+                           + ANSI_RESET);
+        System.out.println(ANSI_PURPLE
+                           + "I'll tell you all about it when I see you again."
+                           + ANSI_RESET);
     }
 
     private static void processInput(
@@ -131,12 +142,24 @@ public final class Application {
                     for (Token name : names) {
                         typeContext.put(name.lexeme, new InferCheck.HasKind());
                     }
+                    String namesString = String.join(
+                            ", ",
+                            names.stream().map(t -> t.lexeme).toList()
+                    );
+                    System.out.println(ANSI_CYAN + ANSI_ITALIC
+                                       + "introduced "
+                                       + namesString + " : *"
+                                       + ANSI_RESET);
                 } else {
                     Type type = Elab.elabType(typeNode);
                     InferCheck.checkKind(typeNode.location(), typeContext, type);
                     for (Token name : names) {
                         env.put(name.lexeme, Value.vFree(new Name.Global(name.lexeme)));
                         typeContext.put(name.lexeme, new InferCheck.HasType(type));
+                        System.out.println(ANSI_CYAN + ANSI_ITALIC
+                                           + "postulated "
+                                           + name.lexeme + " : " + type
+                                           + ANSI_RESET);
                     }
                 }
             }
@@ -149,7 +172,10 @@ public final class Application {
                 typeContext.put(name.lexeme, new InferCheck.HasType(type));
 
                 Term normalForm = Eval.reify(value);
-                System.out.println(ANSI_GREEN + name.lexeme + " : " + type + " = " + normalForm + ANSI_RESET);
+                System.out.println(ANSI_GREEN
+                                   + "defined "
+                                   + name.lexeme + " : " + type + " = " + normalForm
+                                   + ANSI_RESET);
             }
             case PNode.Check(Node termNode) -> checkAndEval(termNode, env, typeContext);
             case PNode.Program(var items) -> {
