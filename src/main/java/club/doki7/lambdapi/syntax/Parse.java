@@ -12,11 +12,16 @@ import java.util.Set;
 /// 具体语法：
 ///
 /// {@snippet lang="bnf" :
-///expr ::= expr ':' arrow-expr
+///program ::= declaration*
+///
+/// declaration ::= 'axiom' identifier in expr
+///              | 'defun' identifier '=' expr
+///
+/// expr ::= expr in arrow-expr
 ///        | arrow-expr
 ///
-/// arrow-expr ::= forall identifier ':' simple-expr generic-arrow arrow-expr
-///              | forall '(' identifier-list ':' expr ')' generic-arrow arrow-expr
+/// arrow-expr ::= forall identifier in simple-expr generic-arrow arrow-expr
+///              | forall '(' identifier-list in expr ')' generic-arrow arrow-expr
 ///              | lambda identifier lambda-arrow arrow-expr
 ///              | app-expr generic-arrow arrow-expr
 ///              | app-expr
@@ -29,6 +34,7 @@ import java.util.Set;
 ///               | '*'
 ///
 /// forall ::= 'forall' | 'Π' | '∀'
+/// in ::= ':' | '::' | '<:' | '∈' | 'in'
 /// identifier-list ::= identifier (',' identifier)*
 /// generic-arrow ::= '->' | '→' | '.' | ','
 /// lambda ::= 'λ' | 'lambda' | '\'
@@ -47,36 +53,14 @@ public final class Parse {
         public final @NotNull String message;
     }
 
-    private final @NotNull ArrayList<Token> tokens;
-    private int pos;
-
-    private Parse(@NotNull ArrayList<Token> tokens) {
-        this.tokens = tokens;
-        this.pos = 0;
-    }
-
     public static @NotNull Node parseExpr(@NotNull ArrayList<Token> tokens) throws ParseException {
         Parse p = new Parse(tokens);
         return p.parseExpr();
     }
 
-    private @Nullable Token peek() {
-        if (pos < tokens.size()) {
-            return tokens.get(pos);
-        }
-        return null;
-    }
-
-    private @Nullable Token consume() {
-        if (pos < tokens.size()) {
-            return tokens.get(pos++);
-        }
-        return null;
-    }
-
-    private boolean check(Token.Kind kind) {
-        Token t = peek();
-        return t != null && t.kind == kind;
+    private Parse(@NotNull ArrayList<Token> tokens) {
+        this.tokens = tokens;
+        this.pos = 0;
     }
 
     private @NotNull Node parseExpr() throws ParseException {
@@ -99,20 +83,12 @@ public final class Parse {
         }
 
         Node left = parseAppExpr();
-        if (isGenericArrow()) {
+        if (check(GENERIC_ARROW_KINDS)) {
             consume();
             Node right = parseArrowExpr();
-            return new Node.Pi(null, left, right);
+            return new Node.Pi((String) null, left, right);
         }
         return left;
-    }
-
-    private boolean isGenericArrow() {
-        Token t = peek();
-        if (t == null) return false;
-        return t.kind == Token.Kind.ARROW
-                || t.kind == Token.Kind.DOT
-                || t.kind == Token.Kind.COMMA;
     }
 
     private @NotNull Node parsePi() throws ParseException {
@@ -120,20 +96,20 @@ public final class Parse {
         if (check(Token.Kind.LPAREN)) {
             consume();
             List<Token> idents = parseIdentifierList();
-            expectAndConsume(Token.Kind.COLON);
+            expectConsume(Token.Kind.COLON);
             Node type = parseExpr();
-            expectAndConsume(Token.Kind.RPAREN);
-            expectAndConsume(GENERIC_ARROW_KINDS);
+            expectConsume(Token.Kind.RPAREN);
+            expectConsume(GENERIC_ARROW_KINDS);
             Node body = parseArrowExpr();
             for (int i = idents.size() - 1; i >= 0; i--) {
                 body = new Node.Pi(idents.get(i), type, body);
             }
             return body;
         } else {
-            Token ident = expectAndConsume(Token.Kind.IDENT);
-            expectAndConsume(Token.Kind.COLON);
+            Token ident = expectConsume(Token.Kind.IDENT);
+            expectConsume(Token.Kind.COLON);
             Node type = parseSimpleExpr();
-            expectAndConsume(GENERIC_ARROW_KINDS);
+            expectConsume(GENERIC_ARROW_KINDS);
             Node body = parseArrowExpr();
             return new Node.Pi(ident, type, body);
         }
@@ -141,18 +117,18 @@ public final class Parse {
 
     private @NotNull List<Token> parseIdentifierList() throws ParseException {
         List<Token> idents = new ArrayList<>();
-        idents.add(expectAndConsume(Token.Kind.IDENT));
+        idents.add(expectConsume(Token.Kind.IDENT));
         while (check(Token.Kind.COMMA)) {
             consume();
-            idents.add(expectAndConsume(Token.Kind.IDENT));
+            idents.add(expectConsume(Token.Kind.IDENT));
         }
         return idents;
     }
 
     private @NotNull Node parseLambda() throws ParseException {
         consume();
-        Token ident = expectAndConsume(Token.Kind.IDENT);
-        expectAndConsume(LAMBDA_ARROW_KINDS);
+        Token ident = expectConsume(Token.Kind.IDENT);
+        expectConsume(LAMBDA_ARROW_KINDS);
         Node body = parseArrowExpr();
         return new Node.Lam(ident, body);
     }
@@ -176,7 +152,7 @@ public final class Parse {
             case LPAREN -> {
                 consume();
                 Node inner = parseExpr();
-                expectAndConsume(Token.Kind.RPAREN);
+                expectConsume(Token.Kind.RPAREN);
                 yield inner;
             }
             case IDENT -> {
@@ -204,7 +180,7 @@ public final class Parse {
         return result;
     }
 
-    private @NotNull Token expectAndConsume(Token.Kind kind) throws ParseException {
+    private @NotNull Token expectConsume(Token.Kind kind) throws ParseException {
         Token t = consume();
         if (t == null) {
             @NotNull Token last = tokens.getLast();
@@ -216,7 +192,7 @@ public final class Parse {
         return t;
     }
 
-    private void expectAndConsume(Set<Token.Kind> kinds) throws ParseException {
+    private void expectConsume(Set<Token.Kind> kinds) throws ParseException {
         Token t = consume();
         String kindsString = buildKindsString(kinds);
         if (t == null) {
@@ -243,13 +219,40 @@ public final class Parse {
         return sb.toString();
     }
 
-    private static final Set<Token.Kind> GENERIC_ARROW_KINDS = Set.of(
+    private @Nullable Token peek() {
+        if (pos < tokens.size()) {
+            return tokens.get(pos);
+        }
+        return null;
+    }
+
+    private @Nullable Token consume() {
+        if (pos < tokens.size()) {
+            return tokens.get(pos++);
+        }
+        return null;
+    }
+
+    private boolean check(@NotNull Token.Kind kind) {
+        Token t = peek();
+        return t != null && t.kind == kind;
+    }
+
+    private boolean check(@NotNull Set<Token.Kind> kinds) {
+        Token t = peek();
+        return t != null && kinds.contains(t.kind);
+    }
+
+    private final @NotNull ArrayList<Token> tokens;
+    private int pos;
+
+    private static final @NotNull Set<Token.Kind> GENERIC_ARROW_KINDS = Set.of(
             Token.Kind.ARROW,
             Token.Kind.DOT,
             Token.Kind.COMMA
     );
 
-    private static final Set<Token.Kind> LAMBDA_ARROW_KINDS = Set.of(
+    private static final @NotNull Set<Token.Kind> LAMBDA_ARROW_KINDS = Set.of(
             Token.Kind.ARROW,
             Token.Kind.DOT
     );

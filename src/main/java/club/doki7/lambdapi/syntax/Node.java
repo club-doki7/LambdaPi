@@ -1,5 +1,6 @@
 package club.doki7.lambdapi.syntax;
 
+import club.doki7.lambdapi.ann.TestOnlyConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,6 +30,11 @@ public sealed interface Node {
     }
 
     record Aster(@NotNull Token aster) implements Node {
+        @TestOnlyConstructor
+        public Aster() {
+            this(Token.symbol(Token.Kind.ASTER));
+        }
+
         @Override
         public @NotNull String toString() {
             return "*";
@@ -38,6 +44,12 @@ public sealed interface Node {
     record Pi(@Nullable Token param, @NotNull Node paramType, @NotNull Node body)
             implements Node
     {
+        @TestOnlyConstructor
+        public Pi(@Nullable String param, @NotNull Node paramType, @NotNull Node body) {
+            Token paramToken = (param != null) ? Token.ident(param) : null;
+            this(paramToken, paramType, body);
+        }
+
         @Override
         public @NotNull String toString() {
             if (param != null) {
@@ -55,6 +67,11 @@ public sealed interface Node {
     }
 
     record Var(@NotNull Token name) implements Node {
+        @TestOnlyConstructor
+        public Var(@NotNull String name) {
+            this(Token.ident(name));
+        }
+
         @Override
         public @NotNull String toString() {
             return name.lexeme;
@@ -84,6 +101,11 @@ public sealed interface Node {
     }
 
     record Lam(@NotNull Token param, @NotNull Node body) implements Node {
+        @TestOnlyConstructor
+        public Lam(@NotNull String param, @NotNull Node body) {
+            this(Token.ident(param), body);
+        }
+
         @Override
         public @NotNull String toString() {
             if (body instanceof Ann || body instanceof Pi) {

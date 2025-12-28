@@ -1,5 +1,6 @@
 package club.doki7.lambdapi.syntax;
 
+import club.doki7.lambdapi.ann.TestOnlyConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -31,9 +32,7 @@ public final class Token {
 
         /// 外围语言 (PNode 所定义) 所用的一些关键字
         KW_AXIOM,
-        KW_CLAIM,
-        DEFUN,
-        KW_SORRY;
+        KW_DEFUN;
 
         @Override
         public @NotNull String toString() {
@@ -49,9 +48,7 @@ public final class Token {
                 case PI -> "Π";
                 case COLON -> ":";
                 case KW_AXIOM -> "axiom";
-                case KW_CLAIM -> "claim";
-                case DEFUN -> "defun";
-                case KW_SORRY -> "sorry";
+                case KW_DEFUN -> "defun";
             };
         }
     }
@@ -101,10 +98,12 @@ public final class Token {
         }
     }
 
+    @TestOnlyConstructor
     public static @NotNull Token ident(@NotNull String lexeme) {
         return new Token(Kind.IDENT, lexeme, -1, -1);
     }
 
+    @TestOnlyConstructor
     public static @NotNull Token symbol(@NotNull Kind kind) {
         return new Token(kind, switch (kind) {
             case LPAREN -> "(";
@@ -118,9 +117,7 @@ public final class Token {
             case COLON -> ":";
             case IDENT -> throw new IllegalArgumentException("IDENT token requires a lexeme");
             case KW_AXIOM -> "axiom";
-            case KW_CLAIM -> "claim";
-            case DEFUN -> "defun";
-            case KW_SORRY -> "sorry";
+            case KW_DEFUN -> "defun";
         }, -1, -1);
     }
 
@@ -278,13 +275,9 @@ public final class Token {
             KEYWORDS.put("in", Kind.COLON);
             KEYWORDS.put("axiom", Kind.KW_AXIOM);
             KEYWORDS.put("postulate", Kind.KW_AXIOM);
-            KEYWORDS.put("claim", Kind.KW_CLAIM);
-            KEYWORDS.put("declare", Kind.KW_CLAIM);
-            KEYWORDS.put("defun", Kind.DEFUN);
-            KEYWORDS.put("define", Kind.DEFUN);
-            KEYWORDS.put("sorry", Kind.KW_SORRY);
-            KEYWORDS.put("gomenasai", Kind.KW_SORRY);
-            KEYWORDS.put("QaQ", Kind.KW_SORRY);
+            KEYWORDS.put("defun", Kind.KW_DEFUN);
+            KEYWORDS.put("define", Kind.KW_DEFUN);
+            KEYWORDS.put("let", Kind.KW_DEFUN);
         }
     }
 }

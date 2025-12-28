@@ -1,33 +1,32 @@
 package club.doki7.lambdapi.syntax;
 
+import club.doki7.lambdapi.ann.TestOnlyConstructor;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 public sealed interface PNode {
-    record Axiom(@NotNull String name, @NotNull Node type) implements PNode {
+    record Axiom(@NotNull Token name, @NotNull Node type) implements PNode {
+        @TestOnlyConstructor
+        public Axiom(@NotNull String name, @NotNull Node type) {
+            this(Token.ident(name), type);
+        }
+
         @Override
         public @NotNull String toString() {
             return "axiom " + name + " : " + type;
         }
     }
 
-    record Claim(@NotNull String name, @NotNull Node type) implements PNode {
-        @Override
-        public @NotNull String toString() {
-            return "claim " + name + " : " + type;
+    record Defun(@NotNull Token name, @NotNull Node value) implements PNode {
+        @TestOnlyConstructor
+        public Defun(@NotNull String name, @NotNull Node value) {
+            this(Token.ident(name), value);
         }
-    }
 
-    record Defun(@NotNull String name, @NotNull Node type, @Nullable Node value) implements PNode {
         @Override
         public @NotNull String toString() {
-            if (value != null) {
-                return "defun " + name + " : " + type + " = " + value;
-            } else {
-                return "defun " + name + " : " + type + " = sorry";
-            }
+            return "defun " + name + " = " + value;
         }
     }
 
