@@ -29,7 +29,13 @@ public sealed interface Term {
 
         @Override
         public @NotNull String toString() {
-            throw new UnsupportedOperationException("Not supported yet");
+            if (term instanceof Checkable.Inf(Node _, Inferable inf)) {
+                if (inf instanceof Free || inf instanceof Bound) {
+                    return term + " : " + annotation;
+                }
+            }
+
+            return "(" + term + ") : " + annotation;
         }
     }
 
@@ -91,7 +97,25 @@ public sealed interface Term {
 
         @Override
         public @NotNull String toString() {
-            throw new UnsupportedOperationException("Not supported yet");
+            StringBuilder sb = new StringBuilder();
+
+            if (f instanceof Ann) {
+                sb.append("(").append(f).append(")");
+            } else {
+                sb.append(f);
+            }
+
+            sb.append(" ");
+
+            if (arg instanceof Lam
+                || (arg instanceof Inf(Node _, Inferable inf)
+                    && (inf instanceof App || inf instanceof Ann))) {
+                sb.append("(").append(arg).append(")");
+            } else {
+                sb.append(arg);
+            }
+
+            return sb.toString();
         }
     }
 
