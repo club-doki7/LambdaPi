@@ -29,6 +29,8 @@ public final class Token {
         PI,
         /// `:`, `::`, `<:`, `∈` 或者 `in`
         COLON,
+        /// `=`
+        EQ,
 
         /// 外围语言 (PNode 所定义) 所用的一些关键字
         KW_AXIOM,
@@ -47,6 +49,7 @@ public final class Token {
                 case ASTER -> "*";
                 case PI -> "Π";
                 case COLON -> ":";
+                case EQ -> "=";
                 case KW_AXIOM -> "axiom";
                 case KW_DEFUN -> "defun";
             };
@@ -115,6 +118,7 @@ public final class Token {
             case ASTER -> "*";
             case PI -> "Π";
             case COLON -> ":";
+            case EQ -> "=";
             case IDENT -> throw new IllegalArgumentException("IDENT token requires a lexeme");
             case KW_AXIOM -> "axiom";
             case KW_DEFUN -> "defun";
@@ -205,6 +209,11 @@ public final class Token {
                     case ',' -> {
                         concludeToken();
                         tokens.add(new Token(Kind.COMMA, ",", line, col));
+                        col++;
+                    }
+                    case '=' -> {
+                        concludeToken();
+                        tokens.add(new Token(Kind.EQ, "=", line, col));
                         col++;
                     }
                     case ':' -> {

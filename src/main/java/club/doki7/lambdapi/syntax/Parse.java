@@ -53,6 +53,11 @@ public final class Parse {
         public final @NotNull String message;
     }
 
+    public static @NotNull PNode parseProgram(@NotNull ArrayList<Token> tokens) throws ParseException {
+        Parse p = new Parse(tokens);
+        return p.parseProgram();
+    }
+
     public static @NotNull Node parseExpr(@NotNull ArrayList<Token> tokens) throws ParseException {
         Parse p = new Parse(tokens);
         return p.parseExpr();
@@ -61,6 +66,33 @@ public final class Parse {
     private Parse(@NotNull ArrayList<Token> tokens) {
         this.tokens = tokens;
         this.pos = 0;
+    }
+
+    private @NotNull PNode parseProgram() throws ParseException {
+        List<PNode> items = new ArrayList<>();
+        while (peek() != null) {
+            items.add(parseDeclaration());
+        }
+        return new PNode.Program(items);
+    }
+
+    private @NotNull PNode parseDeclaration() throws ParseException {
+        if (check(Token.Kind.KW_AXIOM)) {
+            consume();
+            Token name = expectConsume(Token.Kind.IDENT);
+            expectConsume(Token.Kind.COLON);
+            Node type = parseExpr();
+            return new PNode.Axiom(name, type);
+        } else if (check(Token.Kind.KW_DEFUN)) {
+            consume();
+            Token name = expectConsume(Token.Kind.IDENT);
+            expectConsume(Token.Kind.EQ);
+            Node value = parseExpr();
+            return new PNode.Defun(name, value);
+        } else {
+            Node expr = parseExpr();
+            return new PNode.Expr(expr);
+        }
     }
 
     private @NotNull Node parseExpr() throws ParseException {
