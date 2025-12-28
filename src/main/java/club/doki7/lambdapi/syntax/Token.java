@@ -33,7 +33,27 @@ public final class Token {
         KW_AXIOM,
         KW_CLAIM,
         DEFUN,
-        KW_SORRY
+        KW_SORRY;
+
+        @Override
+        public @NotNull String toString() {
+            return switch (this) {
+                case IDENT -> "identifier";
+                case LPAREN -> "(";
+                case RPAREN -> ")";
+                case LAMBDA -> "λ";
+                case ARROW -> "→";
+                case DOT -> ".";
+                case COMMA -> ",";
+                case ASTER -> "*";
+                case PI -> "Π";
+                case COLON -> ":";
+                case KW_AXIOM -> "axiom";
+                case KW_CLAIM -> "claim";
+                case DEFUN -> "defun";
+                case KW_SORRY -> "sorry";
+            };
+        }
     }
 
     public final Kind kind;
