@@ -14,57 +14,28 @@ import java.util.Objects;
 public final class InferCheck {
     public sealed interface Kind permits HasKind, HasType {}
 
-    record HasKind() implements Kind {
+    public record HasKind() implements Kind {
         @Override
         public @NotNull String toString() {
             return ":: *";
         }
     }
 
-    record HasType(@NotNull Type type) implements Kind {
+    public record HasType(@NotNull Type type) implements Kind {
         @Override
         public @NotNull String toString() {
             return ":: " + type;
         }
     }
 
-    public static void checkKind(
-            Token location,
-            ConsList<Pair<Name.Local, Kind>> ctx,
+    public static @NotNull Type infer(
             Map<String, Kind> globals,
-            Type type
+            Term.Inferable inferable
     ) throws TypeCheckException {
-        switch (type) {
-            case Type.Free(Name.Global(String strName)) -> {
-                @Nullable Kind kind = globals.get(strName);
-                if (kind == null) {
-                    throw new TypeCheckException(location, "Undefined type identifier " + strName);
-                }
-                if (!(kind instanceof HasKind)) {
-                    throw new TypeCheckException(location, strName + " is not a type");
-                }
-            }
-            case Type.Free(Name.Local _) -> {
-                throw new IllegalStateException("Unexpected local in type checking phase");
-//                Pair<Name.Local, Kind> binding = ctx.findFirst(p -> p.first().index() == index);
-//                if (binding == null) {
-//                    throw new TypeCheckException(location, "Unbound local type variable L" + index);
-//                }
-//                if (!(binding.second() instanceof HasKind)) {
-//                    throw new TypeCheckException(location, "L" + index + " is not a type");
-//                }
-            }
-            case Type.Free(Name.Quote _) -> throw new IllegalStateException(
-                    "Unexpected quote in type checking phase"
-            );
-            case Type.Fun(Type in, Type out) -> {
-                checkKind(location, ctx, globals, in);
-                checkKind(location, ctx, globals, out);
-            }
-        }
+        return infer(0, ConsList.nil(), globals, inferable);
     }
 
-    public static @NotNull Type infer(
+    private static @NotNull Type infer(
             int depth,
             ConsList<Pair<Name.Local, Kind>> ctx,
             Map<String, Kind> globals,
@@ -123,7 +94,7 @@ public final class InferCheck {
         }
     }
 
-    public static void check(
+    private static void check(
             int depth,
             ConsList<Pair<Name.Local, Kind>> ctx,
             Map<String, Kind> globals,
@@ -148,16 +119,45 @@ public final class InferCheck {
                     );
                 }
 
-                ConsList<Pair<Name.Local, Kind>> newCtx = ConsList.cons(
-                        new Pair<>(new Name.Local(depth), new HasType(in)),
-                        ctx
-                );
-                Term.Checkable appliedBody = subst(
-                        0,
-                        new Term.Free(node, new Name.Local(depth)),
-                        body
-                );
-                check(depth + 1, newCtx, globals, appliedBody, out);
+                var newCtx = ConsList.cons(new Pair<>(new Name.Local(depth), new HasType(in)), ctx);
+                Term.Checkable newBody = subst(0, new Term.Free(node, new Name.Local(depth)), body);
+                check(depth + 1, newCtx, globals, newBody, out);
+            }
+        }
+    }
+
+    private static void checkKind(
+            Token location,
+            ConsList<Pair<Name.Local, Kind>> ctx,
+            Map<String, Kind> globals,
+            Type type
+    ) throws TypeCheckException {
+        switch (type) {
+            case Type.Free(Name.Global(String strName)) -> {
+                @Nullable Kind kind = globals.get(strName);
+                if (kind == null) {
+                    throw new TypeCheckException(location, "Undefined type identifier " + strName);
+                }
+                if (!(kind instanceof HasKind)) {
+                    throw new TypeCheckException(location, strName + " is not a type");
+                }
+            }
+            case Type.Free(Name.Local _) -> {
+                throw new IllegalStateException("Unexpected local in type checking phase");
+//                Pair<Name.Local, Kind> binding = ctx.findFirst(p -> p.first().index() == index);
+//                if (binding == null) {
+//                    throw new TypeCheckException(location, "Unbound local type variable L" + index);
+//                }
+//                if (!(binding.second() instanceof HasKind)) {
+//                    throw new TypeCheckException(location, "L" + index + " is not a type");
+//                }
+            }
+            case Type.Free(Name.Quote _) -> throw new IllegalStateException(
+                    "Unexpected quote in type checking phase"
+            );
+            case Type.Fun(Type in, Type out) -> {
+                checkKind(location, ctx, globals, in);
+                checkKind(location, ctx, globals, out);
             }
         }
     }
