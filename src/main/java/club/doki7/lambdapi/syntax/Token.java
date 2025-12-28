@@ -1,7 +1,7 @@
 package club.doki7.lambdapi.syntax;
 
-import club.doki7.lambdapi.ann.TestOnlyConstructor;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.TestOnly;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -103,12 +103,12 @@ public final class Token {
         }
     }
 
-    @TestOnlyConstructor
+    @TestOnly
     public static @NotNull Token ident(@NotNull String lexeme) {
         return new Token(Kind.IDENT, lexeme, -1, -1);
     }
 
-    @TestOnlyConstructor
+    @TestOnly
     public static @NotNull Token symbol(@NotNull Kind kind) {
         return new Token(kind, switch (kind) {
             case LPAREN -> "(";

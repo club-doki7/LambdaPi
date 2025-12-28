@@ -1,5 +1,6 @@
 package club.doki7.lambdapi.syntax;
 
+import club.doki7.lambdapi.exc.ParseException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -42,18 +43,6 @@ import java.util.Set;
 /// lambda-arrow ::= '→' | '->' | '.'
 /// }
 public final class Parse {
-    public final static class ParseException extends Exception {
-        public ParseException(@NotNull Token token, @NotNull String message) {
-            super("Parse error at line " + token.line + ", col " + token.col + ": " + message);
-
-            this.token = token;
-            this.message = message;
-        }
-
-        public final @NotNull Token token;
-        public final @NotNull String message;
-    }
-
     public static @NotNull PNode parseProgram(@NotNull ArrayList<Token> tokens) throws ParseException {
         Parse p = new Parse(tokens);
         return p.parseProgram();

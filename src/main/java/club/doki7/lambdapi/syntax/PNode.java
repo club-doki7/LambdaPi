@@ -1,13 +1,13 @@
 package club.doki7.lambdapi.syntax;
 
-import club.doki7.lambdapi.ann.TestOnlyConstructor;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.TestOnly;
 
 import java.util.List;
 
 public sealed interface PNode {
     record Axiom(@NotNull Token name, @NotNull Node type) implements PNode {
-        @TestOnlyConstructor
+        @TestOnly
         public Axiom(@NotNull String name, @NotNull Node type) {
             this(Token.ident(name), type);
         }
@@ -19,7 +19,7 @@ public sealed interface PNode {
     }
 
     record Defun(@NotNull Token name, @NotNull Node value) implements PNode {
-        @TestOnlyConstructor
+        @TestOnly
         public Defun(@NotNull String name, @NotNull Node value) {
             this(Token.ident(name), value);
         }

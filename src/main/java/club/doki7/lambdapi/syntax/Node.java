@@ -1,8 +1,8 @@
 package club.doki7.lambdapi.syntax;
 
-import club.doki7.lambdapi.ann.TestOnlyConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.TestOnly;
 
 /// 简单类型 Lambda 演算 λ<sub>→</sub> 和依值类型 Lambda 演算 λ<sub>Π</sub> 的抽象语法树/核心语法节点
 ///
@@ -30,7 +30,7 @@ public sealed interface Node {
     }
 
     record Aster(@NotNull Token aster) implements Node {
-        @TestOnlyConstructor
+        @TestOnly
         public Aster() {
             this(Token.symbol(Token.Kind.ASTER));
         }
@@ -44,7 +44,7 @@ public sealed interface Node {
     record Pi(@Nullable Token param, @NotNull Node paramType, @NotNull Node body)
             implements Node
     {
-        @TestOnlyConstructor
+        @TestOnly
         public Pi(@Nullable String param, @NotNull Node paramType, @NotNull Node body) {
             Token paramToken = (param != null) ? Token.ident(param) : null;
             this(paramToken, paramType, body);
@@ -67,7 +67,7 @@ public sealed interface Node {
     }
 
     record Var(@NotNull Token name) implements Node {
-        @TestOnlyConstructor
+        @TestOnly
         public Var(@NotNull String name) {
             this(Token.ident(name));
         }
@@ -101,7 +101,7 @@ public sealed interface Node {
     }
 
     record Lam(@NotNull Token param, @NotNull Node body) implements Node {
-        @TestOnlyConstructor
+        @TestOnly
         public Lam(@NotNull String param, @NotNull Node body) {
             this(Token.ident(param), body);
         }

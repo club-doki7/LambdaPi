@@ -8,17 +8,14 @@ public sealed interface Value {
     record VLam(@NotNull Function<Value, Value> lam) implements Value {
         @Override
         public @NotNull String toString() {
-            throw new UnsupportedOperationException(
-                    "Cannot get representation of VLam. "
-                    + "Note: use quote to retrieve a syntactic representation from HOAS structures."
-            );
+            return "VLam";
         }
 
         @Override
         public boolean equals(Object obj) {
             throw new UnsupportedOperationException(
                     "Cannot compare VLam values for equality. "
-                    + "Note: use quote to retrieve a syntactic representation from HOAS structures."
+                    + "Note: use reify to retrieve a syntactic representation from HOAS structures."
             );
         }
     }
