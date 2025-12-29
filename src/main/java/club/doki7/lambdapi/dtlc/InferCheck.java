@@ -27,6 +27,7 @@ public final class InferCheck {
     ) throws TypeCheckException {
         return switch (inferable) {
             case Term.Ann(Node _, Term.Checkable checkable, Term.Checkable annotation) -> {
+                // TODO check annotation to have type *
                 Value annotationEval = Eval.eval(annotation, globals);
                 check(depth, ctx, globals, checkable, annotationEval);
                 yield annotationEval;
