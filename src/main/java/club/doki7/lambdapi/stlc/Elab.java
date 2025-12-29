@@ -99,9 +99,9 @@ public final class Elab {
             throws ElabException
     {
         if (node instanceof Node.Lam(Token param, Node body)) {
-            List<String> newCtx = new ArrayList<>(ctx);
-            newCtx.addLast(param.lexeme);
-            Term.Checkable elabBody = elabCheckable(body, newCtx);
+            ctx.add(param.lexeme);
+            Term.Checkable elabBody = elabCheckable(body, ctx);
+            ctx.removeLast();
             return new Term.Lam(node, elabBody);
         }
 

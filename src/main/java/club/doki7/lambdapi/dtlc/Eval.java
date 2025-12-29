@@ -53,7 +53,7 @@ public final class Eval {
         return switch (func) {
             case Value.VLam(Node _, Function<Value, Value> lam) -> lam.apply(arg);
             case Value.VNeutral n -> new Value.NApp(n.node(), n, arg);
-            case Value.VPi _ -> throw new IllegalStateException("Should apply a Pi type");
+            case Value.VPi _ -> throw new IllegalStateException("Should not apply a Pi type");
             case Value.VStar _ -> throw new IllegalStateException("Should not apply a Star type");
         };
     }

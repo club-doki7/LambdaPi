@@ -75,7 +75,7 @@ public sealed interface Term {
 
         @Override
         public @NotNull String toString() {
-            return "∀ (" + paramType + ") → " + bodyType;
+            return "∀ " + paramType + " → " + bodyType;
         }
     }
 
