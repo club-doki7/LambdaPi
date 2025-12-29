@@ -13,6 +13,10 @@ public final class Eval {
         return eval(term, ConsList.nil(), Map.copyOf(globals));
     }
 
+    public static Term reify(Value value) {
+        return reify(0, value);
+    }
+
     private static Value eval(Term term, ConsList<Value> env, Map<String, Value> globals) {
         return switch (term) {
             case Term.Ann(Node _, Term e, Term _) -> eval(e, env, globals);

@@ -89,7 +89,7 @@ public final class InferCheck {
                 }
 
                 if (name instanceof Name.Global(String strName)) {
-                    Kind kind = globals.get(strName);
+                    @Nullable Kind kind = globals.get(strName);
                     if (kind != null) {
                         if (!(kind instanceof HasType(Type t))) {
                             throw new TypeCheckException(
