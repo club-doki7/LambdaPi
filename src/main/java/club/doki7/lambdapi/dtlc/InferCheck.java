@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 public final class InferCheck {
+    // TODO this `globals` is erroneous because it's trying to represent both env and type context
     public static @NotNull Value infer(Term.Inferable inferable, Map<String, Value> globals)
         throws TypeCheckException
     {
