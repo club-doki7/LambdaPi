@@ -1,7 +1,6 @@
 package club.doki7.lambdapi.dtlc;
 
 import club.doki7.lambdapi.common.Name;
-import club.doki7.lambdapi.stlc.Type;
 import club.doki7.lambdapi.syntax.Node;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,7 +12,7 @@ public sealed interface Term {
     sealed interface Inferable extends Term permits Ann, Star, Pi, Bound, Free, App {}
     sealed interface Checkable extends Term permits Inf, Lam {}
 
-    record Ann(@NotNull Node node, @NotNull Checkable term, @NotNull Type annotation)
+    record Ann(@NotNull Node node, @NotNull Checkable term, @NotNull Checkable annotation)
             implements Inferable
     {
         @Override

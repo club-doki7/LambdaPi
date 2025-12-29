@@ -54,7 +54,7 @@ public final class Eval {
         };
     }
 
-    private static Term.@NotNull Checkable reify(int depth, Value value) {
+    private static @NotNull Term.Checkable reify(int depth, Value value) {
         return switch (value) {
             case Value.VLam(Function<Value, Value> lam) -> new Term.Lam(
                     null,

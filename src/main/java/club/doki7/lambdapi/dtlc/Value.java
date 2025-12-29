@@ -75,4 +75,8 @@ public sealed interface Value {
             return "(" + func + " " + arg + ")";
         }
     }
+
+    static @NotNull Value vFree(@NotNull Node node, @NotNull Name name) {
+        return new NFree(node, name);
+    }
 }

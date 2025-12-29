@@ -8,14 +8,15 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+
+import static club.doki7.lambdapi.common.DeBruijnIndex.findInContext;
 
 public final class Elab {
     public static @NotNull Term elab(@NotNull Node node) throws ElabException {
         return elabInferable(node, new ArrayList<>());
     }
 
-    public static Type elabType(Node node) throws ElabException {
+    public static @NotNull Type elabType(@NotNull Node node) throws ElabException {
         return switch (node) {
             case Node.Var(Token name) -> new Type.Free(new Name.Global(name.lexeme));
             case Node.Pi(Token param, Node paramType, Node body) -> {
@@ -48,7 +49,9 @@ public final class Elab {
         };
     }
 
-    private static Term.Inferable elabInferable(Node node, List<String> ctx) throws ElabException {
+    private static Term.Inferable elabInferable(@NotNull Node node, @NotNull List<String> ctx)
+            throws ElabException
+    {
         return switch (node) {
             case Node.Ann(Node term, Node annotation) -> {
                 Term.Checkable elabTerm = elabCheckable(term, ctx);
@@ -92,8 +95,10 @@ public final class Elab {
         };
     }
 
-    private static Term.Checkable elabCheckable(Node node, List<String> ctx) throws ElabException {
-        if (Objects.requireNonNull(node) instanceof Node.Lam(Token param, Node body)) {
+    private static Term.Checkable elabCheckable(@NotNull Node node, @NotNull List<String> ctx)
+            throws ElabException
+    {
+        if (node instanceof Node.Lam(Token param, Node body)) {
             List<String> newCtx = new ArrayList<>(ctx);
             newCtx.addLast(param.lexeme);
             Term.Checkable elabBody = elabCheckable(body, newCtx);
@@ -102,14 +107,5 @@ public final class Elab {
 
         Term.Inferable inf = elabInferable(node, ctx);
         return new Term.Inf(node, inf);
-    }
-
-    private static int findInContext(@NotNull String name, @NotNull List<String> ctx) {
-        for (int i = ctx.size() - 1; i >= 0; i--) {
-            if (ctx.get(i).equals(name)) {
-                return ctx.size() - 1 - i;
-            }
-        }
-        return -1;
     }
 }
