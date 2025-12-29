@@ -1,5 +1,6 @@
 package club.doki7.lambdapi.stlc;
 
+import club.doki7.lambdapi.common.Name;
 import club.doki7.lambdapi.syntax.Node;
 import club.doki7.lambdapi.util.ConsList;
 import org.jetbrains.annotations.NotNull;

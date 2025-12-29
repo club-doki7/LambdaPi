@@ -1,4 +1,4 @@
-package club.doki7.lambdapi.stlc;
+package club.doki7.lambdapi.common;
 
 import org.jetbrains.annotations.NotNull;
 

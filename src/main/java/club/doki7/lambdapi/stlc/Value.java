@@ -1,5 +1,6 @@
 package club.doki7.lambdapi.stlc;
 
+import club.doki7.lambdapi.common.Name;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Function;

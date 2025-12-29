@@ -25,7 +25,7 @@ public final class Token {
         COMMA,
         /// `*`
         ASTER,
-        /// `Π`, `∀` 或者 `forall`
+        /// `∀`, `Π` 或者 `forall`
         PI,
         /// `:`, `::`, `<:`, `∈` 或者 `in`
         COLON,
@@ -48,7 +48,7 @@ public final class Token {
                 case DOT -> ".";
                 case COMMA -> ",";
                 case ASTER -> "*";
-                case PI -> "Π";
+                case PI -> "∀";
                 case COLON -> ":";
                 case EQ -> "=";
                 case KW_AXIOM -> "axiom";
@@ -118,7 +118,7 @@ public final class Token {
             case DOT -> ".";
             case COMMA -> ",";
             case ASTER -> "*";
-            case PI -> "Π";
+            case PI -> "∀";
             case COLON -> ":";
             case EQ -> "=";
             case IDENT -> throw new IllegalArgumentException("IDENT token requires a lexeme");

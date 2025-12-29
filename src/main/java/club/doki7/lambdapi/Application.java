@@ -1,5 +1,6 @@
 package club.doki7.lambdapi;
 
+import club.doki7.lambdapi.common.Name;
 import club.doki7.lambdapi.exc.ElabException;
 import club.doki7.lambdapi.exc.LPiException;
 import club.doki7.lambdapi.exc.ParseException;

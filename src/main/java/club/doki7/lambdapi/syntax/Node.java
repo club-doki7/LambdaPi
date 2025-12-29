@@ -70,7 +70,7 @@ public sealed interface Node {
         @Override
         public @NotNull String toString() {
             if (param != null) {
-                return "(Π" + param.lexeme + " : " + paramType + ") → " + body;
+                return "∀(" + param.lexeme + " : " + paramType + ") → " + body;
             } else {
                 if (paramType instanceof Pi
                     || paramType instanceof Ann
