@@ -75,6 +75,9 @@ public sealed interface Term {
 
         @Override
         public @NotNull String toString() {
+            if (paramType instanceof Term.Inf(Node _, Term.Pi _)) {
+                return "∀ (" + paramType + ") → " + bodyType;
+            }
             return "∀ " + paramType + " → " + bodyType;
         }
     }
