@@ -14,10 +14,10 @@ Yet another (modern) Java implementation of the famous [LambdaPi.pdf](https://ww
     - [x] Evaluator
     - [x] Type checker
     - [x] Quoting
-  - [ ] DTLC (λ<sub>Π</sub>)
-    - [ ] Representation
-    - [ ] Evaluator + Type checker
-    - [ ] Quoting
+  - [x] DTLC (λ<sub>Π</sub>)
+    - [x] Representation
+    - [x] Evaluator + Type checker
+    - [x] Quoting
   - [ ] Natural number
   - [ ] Vector
 - [ ] Python implementation
