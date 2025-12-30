@@ -11,6 +11,9 @@ import club.doki7.lambdapi.syntax.PNode;
 import club.doki7.lambdapi.syntax.Parse;
 import club.doki7.lambdapi.syntax.Token;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +30,7 @@ public final class Application implements AsciiColor {
         System.out.println("  check <expr>             - Type check and evaluate expression");
         System.out.println("  <expr>                   - Type check and evaluate expression");
         System.out.println("  :env                     - Show current environment and type context");
+        System.out.println("  :include <file>          - Load and execute file");
         System.out.println("  :clear, :cls             - Clear environment and type context");
         System.out.println("  :quit, :q                - Exit REPL");
         System.out.println();
@@ -63,19 +67,44 @@ public final class Application implements AsciiColor {
                             Value value = entry.getValue();
                             Type type = globals.types().get(name);
                             boolean isAxiom = value instanceof Value.NFree;
-                            System.out.println(
-                                    (isAxiom ? ANSI_ITALIC + ANSI_CYAN : ANSI_GREEN)
-                                    + "  "
-                                    + name
-                                    + " : "
-                                    + Eval.reify(type.value())
-                                    + ANSI_RESET
-                            );
+                            if (isAxiom) {
+                                System.out.println(
+                                        ANSI_ITALIC + ANSI_CYAN
+                                        + "\t"
+                                        + name
+                                        + " : "
+                                        + Eval.reify(type.value())
+                                        + ANSI_RESET
+                                );
+                            } else {
+                                System.out.println(
+                                        ANSI_GREEN
+                                        + "\t"
+                                        + name
+                                        + " : "
+                                        + Eval.reify(type.value())
+                                        + "\n\t\t= "
+                                        + Eval.reify(value)
+                                        + ANSI_RESET
+                                );
+                            }
                         }
                     } else {
                         System.out.println(ANSI_GREEN + "Environment is empty." + ANSI_RESET);
                     }
                     continue;
+            }
+
+            if (line.startsWith(":include ")) {
+                String filePath = line.substring(":include ".length()).trim();
+                try {
+                    includeFile(filePath, globals);
+                } catch (IOException e) {
+                    System.out.println(ANSI_RED + "Error reading file: " + e.getMessage() + ANSI_RESET);
+                } catch (LPiException e) {
+                    System.out.println(ANSI_RED + "Error: " + e.getMessage() + ANSI_RESET);
+                }
+                continue;
             }
 
             try {
@@ -111,7 +140,7 @@ public final class Application implements AsciiColor {
             && firstTokenKind != Token.Kind.KW_DEFUN
             && firstTokenKind != Token.Kind.KW_CHECK) {
             Node expr = Parse.parseExpr(tokens);
-            checkAndEval(expr, globals);
+            checkAndEval(expr, globals, false);
         } else {
             PNode program = Parse.parseProgram(tokens);
             if (program instanceof PNode.Program(var items)) {
@@ -162,7 +191,7 @@ public final class Application implements AsciiColor {
                                    + " : " + Eval.reify(type.value())
                                    + ANSI_RESET);
             }
-            case PNode.Check(Node termNode) -> checkAndEval(termNode, globals);
+            case PNode.Check(Node termNode) -> checkAndEval(termNode, globals, true);
             case PNode.Program(var items) -> {
                 for (PNode item : items) {
                     processDeclaration(item, globals);
@@ -171,15 +200,46 @@ public final class Application implements AsciiColor {
         }
     }
 
+    private static void includeFile(
+            String filePath,
+            Globals globals
+    ) throws IOException, ParseException, ElabException, TypeCheckException {
+        Path path = Path.of(filePath);
+        String content = Files.readString(path);
+        ArrayList<Token> tokens = Token.tokenize(content);
+        if (tokens.isEmpty()) {
+            return;
+        }
+
+        PNode program = Parse.parseProgram(tokens);
+        if (program instanceof PNode.Program(var items)) {
+            for (PNode item : items) {
+                processDeclaration(item, globals);
+            }
+        }
+
+        System.out.println(ANSI_GREEN + "Loaded: " + path.toAbsolutePath() + ANSI_RESET);
+    }
+
     private static void checkAndEval(
             Node expr,
-            Globals globals
+            Globals globals,
+            boolean explicitCheck
     ) throws ElabException, TypeCheckException {
         Term term = Elab.elab(expr);
         Type type = InferCheck.infer((Term.Inferable) term, globals);
         Value value = Eval.eval(term, globals.values());
         Term normalForm = Eval.reify(value);
 
-        System.out.println(ANSI_GREEN + normalForm + " : " + Eval.reify(type.value()) + ANSI_RESET);
+        if (explicitCheck) {
+            System.out.println(
+                    ANSI_GREEN
+                    + "checked " + expr + "\n"
+                    + "\t= " + normalForm + " : " + Eval.reify(type.value())
+                    + ANSI_RESET
+            );
+        } else {
+            System.out.println(ANSI_GREEN + normalForm + " : " + Eval.reify(type.value()) + ANSI_RESET);
+        }
     }
 }
