@@ -53,15 +53,15 @@ public final class InferCheck {
             case Term.App(Node node, Term.Inferable f, Term.Checkable arg) -> {
                 Type fType = infer(depth, ctx, globals, f);
                 if (!(fType instanceof Type(Value.VPi(Node _,
-                                                      Value in,
-                                                      Function<Value, Value> out)))) {
+                                                      Type in,
+                                                      Function<Type, Type> out)))) {
                     throw new TypeCheckException(
                             node.location(),
                             "Expected function type in application"
                     );
                 }
-                check(depth, ctx, globals, arg, Type.of(in));
-                yield Type.of(out.apply(Eval.eval(arg, globals.values())));
+                check(depth, ctx, globals, arg, in);
+                yield out.apply(Type.of(Eval.eval(arg, globals.values())));
             }
             case Term.Pi(Node node, Term.Checkable in, Term.Checkable out) -> {
                 Type vStar = Type.of(new Value.VStar(node));
@@ -105,8 +105,8 @@ public final class InferCheck {
             }
             case Term.Lam(Node node, Term.Checkable body) -> {
                 if (!(expected instanceof Type(Value.VPi(Node _,
-                                                         Value in,
-                                                         Function<Value, Value> out)))) {
+                                                         Type in,
+                                                         Function<Type, Type> out)))) {
                     throw new TypeCheckException(
                             node.location(),
                             "Lambda terms can be only checked as function type, got " + expected
@@ -116,10 +116,10 @@ public final class InferCheck {
                 Name.Local local = new Name.Local(depth);
                 check(
                         depth + 1,
-                        ConsList.cons(new Pair<>(local, Type.of(in)), ctx),
+                        ConsList.cons(new Pair<>(local, in), ctx),
                         globals,
                         subst(0, new Term.Free(node, local), body),
-                        Type.of(out.apply(Value.vFree(node, local)))
+                        out.apply(Type.of(Value.vFree(node, local)))
                 );
             }
         }

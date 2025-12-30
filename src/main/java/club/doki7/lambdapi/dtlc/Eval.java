@@ -47,8 +47,8 @@ public final class Eval {
             case Term.Star(Node node) -> new Value.VStar(node);
             case Term.Pi(Node node, Term.Checkable in, Term.Checkable out) -> new Value.VPi(
                     node,
-                    eval(in, env, globals),
-                    x -> eval(out, ConsList.cons(x, env), globals)
+                    Type.of(eval(in, env, globals)),
+                    x -> Type.of(eval(out, ConsList.cons(x.value(), env), globals))
             );
         };
     }
@@ -69,14 +69,16 @@ public final class Eval {
                     reify(depth + 1, lam.apply(Value.vFree(node, new Name.Quote(depth))))
             );
             case Value.VNeutral n -> new Term.Inf(n.node(), neutralReify(depth, n));
-            case Value.VPi(Node node, Value in, Function<Value, Value> out) -> new Term.Inf(
+            case Value.VPi(Node node, Type in, Function<Type, Type> out) -> new Term.Inf(
                     node,
                     new Term.Pi(
                             node,
-                            reify(depth, in),
+                            reify(depth, in.value()),
                             reify(
                                     depth + 1,
-                                    out.apply(Value.vFree(node, new Name.Quote(depth)))
+                                    out.apply(
+                                            Type.of(Value.vFree(node, new Name.Quote(depth)))
+                                    ).value()
                             )
                     )
             );
