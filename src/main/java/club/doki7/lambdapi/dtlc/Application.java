@@ -20,7 +20,7 @@ public final class Application implements AsciiColor {
     static void main() {
         Globals globals = Globals.empty();
 
-        System.out.println("=== Dependently Typed Lambda Calculus ===");
+        System.out.println("=== Dependent Typed Lambda Calculus ===");
         System.out.println("Commands:");
         System.out.println("  axiom <name> : <type>    - Postulate axiom of type");
         System.out.println("  defun <name> = <expr>    - Define function");
