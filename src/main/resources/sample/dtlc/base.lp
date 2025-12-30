@@ -12,6 +12,11 @@ defun eq-trans =
         λP. λpx. eq-yz P (eq-xy P px)
     : ∀a : * -> ∀x : a -> ∀y : a -> ∀z : a -> Eq a x y -> Eq a y z -> Eq a x z
 
+axiom m, n, p : *
+axiom eq-mn : Eq * m n
+axiom eq-np : Eq * n p
+check eq-trans * m n p eq-mn eq-np : Eq * m p
+
 defun CNat = ∀a : * -> (a -> a) -> a -> a
 
 defun czro = λa. λf. λx. x : CNat
@@ -30,9 +35,3 @@ defun +-assoc = λm. λn. λp.
     : ∀ (m, n, p : CNat) -> Eq CNat (+ (+ m n) p) (+ m (+ n p))
 
 check +-assoc 1 2 3 : Eq CNat (+ (+ 1 2) 3) (+ 1 (+ 2 3))
-
-axiom m, n, p : CNat
-axiom eq-mn : Eq CNat m n
-axiom eq-np : Eq CNat n p
-
-check eq-trans CNat m n p eq-mn eq-np : Eq CNat m p

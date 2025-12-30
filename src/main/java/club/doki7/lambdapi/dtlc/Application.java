@@ -183,12 +183,11 @@ public final class Application implements AsciiColor {
                 globals.values().put(name.lexeme, value);
                 globals.types().put(name.lexeme, type);
 
-                Term normalForm = Eval.reify(value);
                 System.out.println(ANSI_GREEN
                                    + "defined "
                                    + name.lexeme
-                                   + " = " + normalForm
                                    + " : " + Eval.reify(type.value())
+                                   + "\n\t= " + Eval.reify(value)
                                    + ANSI_RESET);
             }
             case PNode.Check(Node termNode) -> checkAndEval(termNode, globals, true);
