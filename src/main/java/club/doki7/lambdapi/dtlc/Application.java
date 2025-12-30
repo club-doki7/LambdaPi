@@ -22,7 +22,6 @@ public final class Application implements AsciiColor {
 
         System.out.println("=== Dependently Typed Lambda Calculus ===");
         System.out.println("Commands:");
-        System.out.println("  axiom <type> : *         - Introduce type variable");
         System.out.println("  axiom <name> : <type>    - Postulate axiom of type");
         System.out.println("  defun <name> = <expr>    - Define function");
         System.out.println("  check <expr>             - Type check and evaluate expression");
