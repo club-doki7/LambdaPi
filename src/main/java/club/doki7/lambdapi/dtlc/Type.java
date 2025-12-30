@@ -2,8 +2,11 @@ package club.doki7.lambdapi.dtlc;
 
 import org.jetbrains.annotations.NotNull;
 
-// TODO: make use of this nominal alias
 public record Type(@NotNull Value value) {
+    public static Type of(@NotNull Value value) {
+        return new Type(value);
+    }
+
     @Override
     public @NotNull String toString() {
         return value.toString();

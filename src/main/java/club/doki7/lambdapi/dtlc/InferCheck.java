@@ -8,38 +8,37 @@ import club.doki7.lambdapi.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
 import java.util.function.Function;
 
 public final class InferCheck {
-    // TODO this `globals` is erroneous because it's trying to represent both env and type context
-    public static @NotNull Value infer(Term.Inferable inferable, Map<String, Value> globals)
+    public static @NotNull Type infer(Term.Inferable inferable, Globals globals)
         throws TypeCheckException
     {
         return infer(0, ConsList.nil(), globals, inferable);
     }
 
-    private static @NotNull Value infer(
+    private static @NotNull Type infer(
             int depth,
-            ConsList<Pair<Name.Local, Value>> ctx,
-            Map<String, Value> globals,
+            ConsList<Pair<Name.Local, Type>> ctx,
+            Globals globals,
             Term.Inferable inferable
     ) throws TypeCheckException {
         return switch (inferable) {
-            case Term.Ann(Node _, Term.Checkable checkable, Term.Checkable annotation) -> {
-                // TODO check annotation to have type *
-                Value annotationEval = Eval.eval(annotation, globals);
+            case Term.Ann(Node node, Term.Checkable checkable, Term.Checkable annotation) -> {
+                Type vStar = Type.of(new Value.VStar(node));
+                check(depth, ctx, globals, annotation, vStar);
+                Type annotationEval = Type.of(Eval.eval(annotation, globals.values()));
                 check(depth, ctx, globals, checkable, annotationEval);
                 yield annotationEval;
             }
             case Term.Free(Node node, Name name) -> {
-                @Nullable Pair<Name.Local, Value> entry = ctx.findFirst(p -> p.first().equals(name));
+                @Nullable Pair<Name.Local, Type> entry = ctx.findFirst(p -> p.first().equals(name));
                 if (entry != null) {
                     yield entry.second();
                 }
 
                 if (name instanceof Name.Global(String strName)) {
-                    @Nullable Value type = globals.get(strName);
+                    @Nullable Type type = globals.types().get(strName);
                     if (type != null) {
                         yield type;
                     }
@@ -50,22 +49,24 @@ public final class InferCheck {
                         "Undefined variable identifier " + name
                 );
             }
-            case Term.Star(Node node) -> new Value.VStar(node);
+            case Term.Star(Node node) -> Type.of(new Value.VStar(node));
             case Term.App(Node node, Term.Inferable f, Term.Checkable arg) -> {
-                Value fType = infer(depth, ctx, globals, f);
-                if (!(fType instanceof Value.VPi(Node _, Value in, Function<Value, Value> out))) {
+                Type fType = infer(depth, ctx, globals, f);
+                if (!(fType instanceof Type(Value.VPi(Node _,
+                                                      Value in,
+                                                      Function<Value, Value> out)))) {
                     throw new TypeCheckException(
                             node.location(),
                             "Expected function type in application"
                     );
                 }
-                check(depth, ctx, globals, arg, in);
-                yield out.apply(Eval.eval(arg, globals));
+                check(depth, ctx, globals, arg, Type.of(in));
+                yield Type.of(out.apply(Eval.eval(arg, globals.values())));
             }
             case Term.Pi(Node node, Term.Checkable in, Term.Checkable out) -> {
-                Value vStar = new Value.VStar(node);
+                Type vStar = Type.of(new Value.VStar(node));
                 check(depth, ctx, globals, in, vStar);
-                Value inEval = Eval.eval(in, globals);
+                Type inEval = Type.of(Eval.eval(in, globals.values()));
                 Name.Local local = new Name.Local(depth);
                 check(
                         depth + 1,
@@ -84,16 +85,16 @@ public final class InferCheck {
 
     private static void check(
             int depth,
-            ConsList<Pair<Name.Local, Value>> ctx,
-            Map<String, Value> globals,
+            ConsList<Pair<Name.Local, Type>> ctx,
+            Globals globals,
             Term.Checkable checkable,
-            Value expected
+            Type expected
     ) throws TypeCheckException {
         switch (checkable) {
             case Term.Inf(Node node, Term.Inferable inferable) -> {
-                Value inferred = infer(depth, ctx, globals, inferable);
-                Term inferredReadback = Eval.reify(inferred);
-                Term expectedReadback = Eval.reify(expected);
+                Type inferred = infer(depth, ctx, globals, inferable);
+                Term inferredReadback = Eval.reify(inferred.value());
+                Term expectedReadback = Eval.reify(expected.value());
                 if (!inferredReadback.equals(expectedReadback)) {
                     throw new TypeCheckException(
                             node.location(),
@@ -103,9 +104,9 @@ public final class InferCheck {
                 }
             }
             case Term.Lam(Node node, Term.Checkable body) -> {
-                if (!(expected instanceof Value.VPi(Node _,
-                                                    Value in,
-                                                    Function<Value, Value> out))) {
+                if (!(expected instanceof Type(Value.VPi(Node _,
+                                                         Value in,
+                                                         Function<Value, Value> out)))) {
                     throw new TypeCheckException(
                             node.location(),
                             "Lambda terms can be only checked as function type, got " + expected
@@ -115,10 +116,10 @@ public final class InferCheck {
                 Name.Local local = new Name.Local(depth);
                 check(
                         depth + 1,
-                        ConsList.cons(new Pair<>(local, in), ctx),
+                        ConsList.cons(new Pair<>(local, Type.of(in)), ctx),
                         globals,
                         subst(0, new Term.Free(node, local), body),
-                        out.apply(Value.vFree(node, local))
+                        Type.of(out.apply(Value.vFree(node, local)))
                 );
             }
         }
