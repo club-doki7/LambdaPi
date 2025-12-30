@@ -1,0 +1,100 @@
+package club.doki7.lambdapi.dtlc;
+
+import club.doki7.lambdapi.common.AsciiColor;
+import club.doki7.lambdapi.exc.ElabException;
+import club.doki7.lambdapi.exc.LPiException;
+import club.doki7.lambdapi.exc.ParseException;
+import club.doki7.lambdapi.exc.TypeCheckException;
+
+import java.util.Map;
+import java.util.Scanner;
+
+public final class Application implements AsciiColor {
+    static void main() {
+        Globals globals = Globals.empty();
+
+        System.out.println("=== Dependently Typed Lambda Calculus ===");
+        System.out.println("Commands:");
+        System.out.println("  axiom <type> : *         - Introduce type variable");
+        System.out.println("  axiom <name> : <type>    - Postulate axiom of type");
+        System.out.println("  defun <name> = <expr>    - Define function");
+        System.out.println("  check <expr>             - Type check and evaluate expression");
+        System.out.println("  <expr>                   - Type check and evaluate expression");
+        System.out.println("  :env                     - Show current environment and type context");
+        System.out.println("  :clear, :cls             - Clear environment and type context");
+        System.out.println("  :quit, :q                - Exit REPL");
+        System.out.println();
+
+        Scanner scanner = new Scanner(System.in);
+
+        loop: while (true) {
+            System.out.print(ANSI_BLUE + ANSI_BOLD + "» " + ANSI_RESET);
+            if (!scanner.hasNextLine()) {
+                break;
+            }
+
+            String line = scanner.nextLine().trim();
+
+            switch (line) {
+                case "":
+                    continue;
+                case ":quit":
+                case ":q":
+                    break loop;
+                case ":clear":
+                case ":cls":
+                    globals.clear();
+                    System.out.println(
+                            ANSI_GREEN
+                            + "You got to put the past behind you before you can move on."
+                            + ANSI_RESET
+                    );
+                    continue;
+                case ":env":
+                    if (!globals.values().isEmpty()) {
+                        for (Map.Entry<String, Value> entry : globals.values().entrySet()) {
+                            String name = entry.getKey();
+                            Value value = entry.getValue();
+                            Type type = globals.types().get(name);
+                            boolean isAxiom = value instanceof Value.NFree;
+                            System.out.println(
+                                    (isAxiom ? ANSI_ITALIC + ANSI_CYAN : ANSI_GREEN)
+                                    + "  "
+                                    + name
+                                    + " "
+                                    + Eval.reify(type.value())
+                                    + ANSI_RESET
+                            );
+                        }
+                    } else {
+                        System.out.println(ANSI_GREEN + "Environment is empty." + ANSI_RESET);
+                    }
+                    continue;
+            }
+
+            try {
+                processInput(line, globals);
+            } catch (LPiException e) {
+                System.out.println(ANSI_RED + "Error: " + e.getMessage() + ANSI_RESET);
+            } catch (Exception e) {
+                System.out.println(ANSI_RED + "Unexpected error: " + e.getMessage() + ANSI_RESET);
+                e.printStackTrace();
+            }
+        }
+
+        scanner.close();
+        System.out.println(ANSI_YELLOW
+                           + "Man! Hahaha... what can I say? Mamba out."
+                           + ANSI_RESET);
+        System.out.println(ANSI_PURPLE
+                           + "I'll tell you all about it when I see you again."
+                           + ANSI_RESET);
+    }
+
+    private static void processInput(
+            String input,
+            Globals globals
+    ) throws ParseException, ElabException, TypeCheckException {
+        // TODO: Implementation goes here
+    }
+}

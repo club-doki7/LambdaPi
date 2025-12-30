@@ -1,5 +1,6 @@
 package club.doki7.lambdapi.stlc;
 
+import club.doki7.lambdapi.common.AsciiColor;
 import club.doki7.lambdapi.common.Name;
 import club.doki7.lambdapi.exc.ElabException;
 import club.doki7.lambdapi.exc.LPiException;
@@ -12,17 +13,7 @@ import club.doki7.lambdapi.syntax.Token;
 
 import java.util.*;
 
-public final class Application {
-    private static final String ANSI_RESET = "\u001B[0m";
-    private static final String ANSI_RED = "\u001B[31m";
-    private static final String ANSI_GREEN = "\u001B[32m";
-    private static final String ANSI_YELLOW = "\u001B[33m";
-    private static final String ANSI_BLUE = "\u001B[34m";
-    private static final String ANSI_PURPLE = "\u001B[35m";
-    private static final String ANSI_CYAN = "\u001B[36m";
-    private static final String ANSI_BOLD = "\u001B[1m";
-    private static final String ANSI_ITALIC = "\u001B[3m";
-
+public final class Application implements AsciiColor {
     static void main() {
         HashMap<String, Value> env = new HashMap<>();
         HashMap<String, InferCheck.Kind> typeContext = new HashMap<>();
