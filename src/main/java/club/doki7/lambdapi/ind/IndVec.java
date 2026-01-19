@@ -11,6 +11,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public final class IndVec {
     public record Vec(Node node,
@@ -135,7 +137,7 @@ public final class IndVec {
         public Value eval(ConsList<Value> env, Map<String, Value> globals) {
             return new IndVec.VCons(
                     node,
-                    Eval.eval(type, env, globals),
+                    Type.of(Eval.eval(type, env, globals)),
                     Eval.eval(len, env, globals),
                     Eval.eval(head, env, globals),
                     Eval.eval(tail, env, globals)
@@ -196,17 +198,144 @@ public final class IndVec {
         public Type infer(int depth,
                           ConsList<Pair<Name.Local, Type>> ctx,
                           Globals globals) throws TypeCheckException {
-            return null;
+            Type univType = Type.of(new Value.VStar(node));
+            Type natType = Type.of(new IndNat.VNat(node));
+
+            InferCheck.check(depth, ctx, globals, type, univType);
+            Type tvType = Type.of(Eval.eval(type, globals.values()));
+
+            Type motiveType = Type.of(new Value.VPi(
+                    node,
+                    natType,
+                    k -> Type.of(new Value.VPi(
+                            node,
+                            Type.of(new VVec(node, tvType, k)),
+                            _ -> univType
+                    ))
+            ));
+            InferCheck.check(depth, ctx, globals, motive, motiveType);
+            Value vMotive = Eval.eval(motive, globals.values());
+
+            Value vBaseCaseType = Eval.vApp(vMotive, new IndNat.VZero(node));
+            vBaseCaseType = Eval.vApp(vBaseCaseType, new VNil(node, tvType.value()));
+            InferCheck.check(depth, ctx, globals, base, Type.of(vBaseCaseType));
+
+            Type stepType = Type.of(new Value.VPi(
+                    node,
+                    natType,
+                    l -> Type.of(new Value.VPi(
+                            node,
+                            tvType,
+                            y -> Type.of(new Value.VPi(
+                                    node,
+                                    Type.of(new VVec(node, tvType, l)),
+                                    ys -> Type.of(new Value.VPi(
+                                            node,
+                                            Type.of(Eval.vApp(Eval.vApp(vMotive, l), ys)),
+                                            _ -> Type.of(Eval.vApp(
+                                                    Eval.vApp(
+                                                            vMotive,
+                                                            new IndNat.VSucc(node, l)
+                                                    ),
+                                                    new VCons(node, tvType, l, y, ys)
+                                            ))
+                                    ))
+                            ))
+                    ))
+            ));
+            InferCheck.check(depth, ctx, globals, step, stepType);
+
+            InferCheck.check(depth, ctx, globals, len, natType);
+            Value vLen = Eval.eval(len, globals.values());
+
+            InferCheck.check(
+                    depth,
+                    ctx,
+                    globals,
+                    scrut,
+                    Type.of(new VVec(node, tvType, vLen))
+            );
+            Value vScrut = Eval.eval(scrut, globals.values());
+            return Type.of(Eval.vApp(Eval.vApp(vMotive, vLen), vScrut));
         }
 
         @Override
         public Value eval(ConsList<Value> env, Map<String, Value> globals) {
-            return null;
+            Value vBase = Eval.eval(base, env, globals);
+            Value vStep = Eval.eval(step, env, globals);
+
+            BiFunction<Value, Value, Value> rec = new BiFunction<>() {
+                @Override
+                public Value apply(Value vLen, Value vVec) {
+                    return switch (vVec) {
+                        case VNil _ -> vBase;
+                        case VCons(Node _, Type _, Value len1, Value head, Value tail) -> {
+                            Value step1 = Eval.vApp(vStep, len1);
+                            Value step2 = Eval.vApp(step1, head);
+                            Value step3 = Eval.vApp(step2, tail);
+                            yield Eval.vApp(step3, this.apply(len1, tail));
+                        }
+                        case Value.VNeutral vn -> new NVecElim(
+                                node,
+                                Eval.eval(type, env, globals),
+                                Eval.eval(motive, env, globals),
+                                vBase,
+                                vStep,
+                                vLen,
+                                vn
+                        );
+                        default -> throw new IllegalStateException(
+                                "Unexpected value in VecElim recursion: " + vVec
+                        );
+                    };
+                }
+            };
+
+            Value vLen = Eval.eval(len, env, globals);
+            Value vScrut = Eval.eval(scrut, env, globals);
+            return rec.apply(vLen, vScrut);
         }
 
         @Override
         public InferableTF subst(int depth, Free r) {
-            return null;
+            return new VecElim(
+                    node,
+                    InferCheck.subst(depth, r, type),
+                    InferCheck.subst(depth, r, motive),
+                    InferCheck.subst(depth, r, base),
+                    InferCheck.subst(depth, r, step),
+                    InferCheck.subst(depth, r, len),
+                    InferCheck.subst(depth, r, scrut)
+            );
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof VecElim vecElim)) return false;
+            return type.equals(vecElim.type)
+                    && motive.equals(vecElim.motive)
+                    && base.equals(vecElim.base)
+                    && step.equals(vecElim.step)
+                    && len.equals(vecElim.len)
+                    && scrut.equals(vecElim.scrut);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(VecElim.class, type, motive, base, step, len, scrut);
+        }
+
+        @Override
+        public @NotNull String toString() {
+            return "(vecElim "
+                   + type + " "
+                   + motive + " "
+                   + base + " "
+                   + step + " "
+                   + len + " "
+                   + scrut
+                   + ")";
         }
     }
 
@@ -241,7 +370,7 @@ public final class IndVec {
     }
 
     public record VCons(Node node,
-                        Value type,
+                        Type type,
                         Value len,
                         Value head,
                         Value tail) implements Value.CValue {
@@ -251,7 +380,7 @@ public final class IndVec {
                     node,
                     new Cons(
                             node,
-                            Eval.reify(depth, type),
+                            Eval.reify(depth, type.value()),
                             Eval.reify(depth, len),
                             Eval.reify(depth, head),
                             Eval.reify(depth, tail)
@@ -262,6 +391,28 @@ public final class IndVec {
         @Override
         public @NotNull Value vApp(Value arg) {
             throw new IllegalStateException("Cannot apply cons to an argument.");
+        }
+    }
+
+    public record NVecElim(Node node,
+                           Value type,
+                           Value motive,
+                           Value base,
+                           Value step,
+                           Value len,
+                           Value.VNeutral nScrut) implements Value.CNeutral {
+        @Override
+        public @NotNull Term.Inferable neutralReify(int depth) {
+            Term.Inferable scrutReify = Eval.neutralReify(depth, nScrut);
+            return new VecElim(
+                    node,
+                    Eval.reify(depth, type),
+                    Eval.reify(depth, motive),
+                    Eval.reify(depth, base),
+                    Eval.reify(depth, step),
+                    Eval.reify(depth, len),
+                    new Term.Inf(scrutReify.node(), scrutReify)
+            );
         }
     }
 }

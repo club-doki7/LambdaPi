@@ -7,6 +7,7 @@ import club.doki7.lambdapi.exc.LPiException;
 import club.doki7.lambdapi.exc.ParseException;
 import club.doki7.lambdapi.exc.TypeCheckException;
 import club.doki7.lambdapi.ind.IndNat;
+import club.doki7.lambdapi.ind.IndVec;
 import club.doki7.lambdapi.syntax.Node;
 import club.doki7.lambdapi.syntax.PNode;
 import club.doki7.lambdapi.syntax.Parse;
@@ -27,6 +28,10 @@ public final class Application implements AsciiColor {
         elab.registerTermFormer(IndNat.Zero.class);
         elab.registerTermFormer(IndNat.Succ.class);
         elab.registerTermFormer(IndNat.NatElim.class);
+        elab.registerTermFormer(IndVec.Vec.class);
+        elab.registerTermFormer(IndVec.Nil.class);
+        elab.registerTermFormer(IndVec.Cons.class);
+        elab.registerTermFormer(IndVec.VecElim.class);
 
         Globals globals = Globals.empty();
 

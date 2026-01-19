@@ -102,7 +102,7 @@ public sealed interface Term {
 
         @Override
         public @NotNull String toString() {
-            return Integer.toString(index);
+            return "ᴰ" + index;
         }
     }
 
