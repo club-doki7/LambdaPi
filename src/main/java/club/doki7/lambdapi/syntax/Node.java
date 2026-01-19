@@ -124,11 +124,17 @@ public sealed interface Node {
 
             sb.append(" ");
 
-            for (var arg : args) {
+            for (int i = 0; i < args.size(); i++) {
+                Node arg = args.get(i);
+
                 if (arg instanceof App || arg instanceof Lam || arg instanceof Pi || arg instanceof Ann) {
                     sb.append("(").append(arg).append(")");
                 } else {
                     sb.append(arg);
+                }
+
+                if (i != args.size() - 1) {
+                    sb.append(" ");
                 }
             }
 

@@ -13,14 +13,14 @@ public sealed interface Name {
     record Local(int index) implements Name {
         @Override
         public @NotNull String toString() {
-            return "L" + index;
+            return DeBruijnIndex.superscriptNum('L', index);
         }
     }
 
     record Quote(int index) implements Name {
         @Override
         public @NotNull String toString() {
-            return "Q" + index;
+            return DeBruijnIndex.superscriptNum('Q', index);
         }
     }
 }

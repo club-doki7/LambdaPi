@@ -181,9 +181,10 @@ public final class IndVec {
                 currentTail = cons.tail();
             }
 
-            return "Vec<" + type + ", " + len + ">[" +
-                    String.join("; ", elements.stream().map(Object::toString).toList()) +
-                    "]";
+            return "Vec["
+                   + type + "; "
+                   + String.join(", ", elements.stream().map(Object::toString).toList())
+                   + "]";
         }
     }
 

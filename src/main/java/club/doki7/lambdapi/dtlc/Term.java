@@ -1,5 +1,6 @@
 package club.doki7.lambdapi.dtlc;
 
+import club.doki7.lambdapi.common.DeBruijnIndex;
 import club.doki7.lambdapi.common.Name;
 import club.doki7.lambdapi.exc.TypeCheckException;
 import club.doki7.lambdapi.syntax.Node;
@@ -102,7 +103,7 @@ public sealed interface Term {
 
         @Override
         public @NotNull String toString() {
-            return "ᴰ" + index;
+            return DeBruijnIndex.superscriptNum('D', index);
         }
     }
 
