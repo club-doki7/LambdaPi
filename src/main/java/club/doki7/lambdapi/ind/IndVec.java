@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 public final class IndVec {
     public record Vec(Node node,
