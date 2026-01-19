@@ -63,7 +63,7 @@ public final class IndNat {
 
         @Override
         public InferableTF subst(int depth, Free r) {
-            return null;
+            return this;
         }
 
         @Override
@@ -187,7 +187,10 @@ public final class IndNat {
                 public Value apply(Value v) {
                     return switch (v) {
                         case VZero _ -> vBase;
-                        case VSucc pred -> Eval.vApp(Eval.vApp(vStep, pred), this.apply(pred));
+                        case VSucc(Node _, Value pred) -> Eval.vApp(
+                                Eval.vApp(vStep, pred),
+                                this.apply(pred)
+                        );
                         case Value.VNeutral vn -> new NNatElim(
                                 node,
                                 Eval.eval(motive, env, globals),
@@ -285,7 +288,7 @@ public final class IndNat {
                     Eval.reify(depth, motive),
                     Eval.reify(depth, base),
                     Eval.reify(depth, step),
-                    new Term.Inf(scrutReify.node(), Eval.neutralReify(depth, nScrut))
+                    new Term.Inf(scrutReify.node(), scrutReify)
             );
         }
     }
