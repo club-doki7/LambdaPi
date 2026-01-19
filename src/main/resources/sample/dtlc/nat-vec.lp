@@ -26,9 +26,11 @@ defun vecElim = \a. \m. \nc. \ic. \n. \v. _Tf_VecElim a m nc ic n v
                : forall (a : *),
                  forall (m : forall (n : Nat), Vec a n -> *),
                  m 0 (nil a) ->
-                 (forall (k : Nat), forall (x : a), forall (xs : Vec a k),
-                     m k xs -> m (succ k) (cons a k x xs)) ->
-                 forall (n : Nat), forall (v : Vec a n), m n v
+                 (forall (k : Nat),
+                  forall (x : a),
+                  forall (xs : Vec a k),
+                  m k xs -> m (succ k) (cons a k x xs)) ->
+                  forall (n : Nat), forall (v : Vec a n), m n v
 
 defun append = \a. vecElim a
                            (\m. \_. forall (n : Nat), Vec a n -> Vec a (plus m n))
