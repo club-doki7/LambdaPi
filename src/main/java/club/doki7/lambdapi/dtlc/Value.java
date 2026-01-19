@@ -41,7 +41,7 @@ public sealed interface Value {
         }
     }
 
-    record VPi(@NotNull Node node, @NotNull Type in, @NotNull Function<Type, Type> out)
+    record VPi(@NotNull Node node, @NotNull Type in, @NotNull Function<Value, Type> out)
             implements Value
     {
         @Override

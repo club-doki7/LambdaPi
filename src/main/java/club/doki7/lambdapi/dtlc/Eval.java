@@ -48,7 +48,7 @@ public final class Eval {
             case Term.Pi(Node node, Term.Checkable in, Term.Checkable out) -> new Value.VPi(
                     node,
                     Type.of(eval(in, env, globals)),
-                    x -> Type.of(eval(out, ConsList.cons(x.value(), env), globals))
+                    x -> Type.of(eval(out, ConsList.cons(x, env), globals))
             );
             case Term.InferableTF tf -> tf.eval(env, globals);
             case Term.CheckableTF tf -> tf.eval(env, globals);
@@ -72,16 +72,14 @@ public final class Eval {
                     reify(depth + 1, lam.apply(Value.vFree(node, new Name.Quote(depth))))
             );
             case Value.VNeutral n -> new Term.Inf(n.node(), neutralReify(depth, n));
-            case Value.VPi(Node node, Type in, Function<Type, Type> out) -> new Term.Inf(
+            case Value.VPi(Node node, Type in, Function<Value, Type> out) -> new Term.Inf(
                     node,
                     new Term.Pi(
                             node,
                             reify(depth, in.value()),
                             reify(
                                     depth + 1,
-                                    out.apply(
-                                            Type.of(Value.vFree(node, new Name.Quote(depth)))
-                                    ).value()
+                                    out.apply(Value.vFree(node, new Name.Quote(depth))).value()
                             )
                     )
             );

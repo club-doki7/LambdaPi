@@ -165,8 +165,8 @@ public final class IndNat {
                     natType,
                     n -> new Type(new Value.VPi(
                             node,
-                            new Type(Eval.vApp(vMotive, n.value())),
-                            _ -> new Type(Eval.vApp(vMotive, new VSucc(node, n.value())))
+                            new Type(Eval.vApp(vMotive, n)),
+                            _ -> new Type(Eval.vApp(vMotive, new VSucc(node, n)))
                     ))
             ));
             InferCheck.check(depth, ctx, globals, step, stepType);

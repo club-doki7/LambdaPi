@@ -54,14 +54,14 @@ public final class InferCheck {
                 Type fType = infer(depth, ctx, globals, f);
                 if (!(fType instanceof Type(Value.VPi(Node _,
                                                       Type in,
-                                                      Function<Type, Type> out)))) {
+                                                      Function<Value, Type> out)))) {
                     throw new TypeCheckException(
                             node.location(),
                             "Expected function type in application"
                     );
                 }
                 check(depth, ctx, globals, arg, in);
-                yield out.apply(Type.of(Eval.eval(arg, globals.values())));
+                yield out.apply(Eval.eval(arg, globals.values()));
             }
             case Term.Pi(Node node, Term.Checkable in, Term.Checkable out) -> {
                 Type vStar = Type.of(new Value.VStar(node));
@@ -107,7 +107,7 @@ public final class InferCheck {
             case Term.Lam(Node node, Term.Checkable body) -> {
                 if (!(expected instanceof Type(Value.VPi(Node _,
                                                          Type in,
-                                                         Function<Type, Type> out)))) {
+                                                         Function<Value, Type> out)))) {
                     throw new TypeCheckException(
                             node.location(),
                             "Lambda terms can be only checked as function type, got " + expected
@@ -120,7 +120,7 @@ public final class InferCheck {
                         ConsList.cons(new Pair<>(local, in), ctx),
                         globals,
                         subst(0, new Term.Free(node, local), body),
-                        out.apply(Type.of(Value.vFree(node, local)))
+                        out.apply(Value.vFree(node, local))
                 );
             }
             case Term.CheckableTF tf -> tf.check(depth, ctx, globals, expected);
