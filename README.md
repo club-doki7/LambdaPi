@@ -2,6 +2,8 @@
 
 Yet another (modern) Java implementation of the famous [LambdaPi.pdf](https://www.andres-loeh.de/LambdaPi/LambdaPi.pdf).
 
+## [Paper translation (Chinese)](https://chuigda.doki7.club/research/lambda-pi)
+
 ## Progress
 
 - [x] Java implementation
