@@ -14,7 +14,7 @@ import java.util.List;
 import static club.doki7.lambdapi.common.DeBruijnIndex.findInContext;
 
 public final class Elab {
-    public void registerTermFormer(Class<? extends Term.IDynTermBase<?>> clazz) {
+    public void registerTermFormer(Class<? extends Term.ITermFormer<?>> clazz) {
         String name = "_Tf_" + clazz.getSimpleName();
 
         Constructor<?>[] constructors = clazz.getConstructors();

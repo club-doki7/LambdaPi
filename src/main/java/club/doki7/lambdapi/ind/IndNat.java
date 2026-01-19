@@ -18,7 +18,7 @@ public final class IndNat {
         public Type infer(int depth,
                           ConsList<Pair<Name.Local, Type>> ctx,
                           Globals globals) {
-            return new Type(new Value.VStar(node));
+            return Type.of(new Value.VStar(node));
         }
 
         @Override
@@ -53,7 +53,7 @@ public final class IndNat {
         public Type infer(int depth,
                           ConsList<Pair<Name.Local, Type>> ctx,
                           Globals globals) {
-            return new Type(new VNat(node));
+            return Type.of(new VNat(node));
         }
 
         @Override
@@ -88,7 +88,7 @@ public final class IndNat {
         public Type infer(int depth,
                           ConsList<Pair<Name.Local, Type>> ctx,
                           Globals globals) throws TypeCheckException {
-            Type natType = new Type(new VNat(node));
+            Type natType = Type.of(new VNat(node));
             InferCheck.check(depth, ctx, globals, pred, natType);
             return natType;
         }
@@ -143,30 +143,30 @@ public final class IndNat {
         public Type infer(int depth,
                           ConsList<Pair<Name.Local, Type>> ctx,
                           Globals globals) throws TypeCheckException {
-            Type natType = new Type(new VNat(node));
+            Type natType = Type.of(new VNat(node));
 
             // motive : forall (n : Nat) -> *
-            Type motiveType = new Type(new Value.VPi(
+            Type motiveType = Type.of(new Value.VPi(
                     node,
                     natType,
-                    _ -> new Type(new Value.VStar(node))
+                    _ -> Type.of(new Value.VStar(node))
             ));
             InferCheck.check(depth, ctx, globals, motive, motiveType);
 
             Value vMotive = Eval.eval(motive, globals.values());
 
             // base : motive 0
-            Type baseType = new Type(Eval.vApp(vMotive, new VZero(node)));
+            Type baseType = Type.of(Eval.vApp(vMotive, new VZero(node)));
             InferCheck.check(depth, ctx, globals, base, baseType);
 
             // step: forall (n : Nat) -> motive n -> motive (S n)
-            Type stepType = new Type(new Value.VPi(
+            Type stepType = Type.of(new Value.VPi(
                     node,
                     natType,
-                    n -> new Type(new Value.VPi(
+                    n -> Type.of(new Value.VPi(
                             node,
-                            new Type(Eval.vApp(vMotive, n)),
-                            _ -> new Type(Eval.vApp(vMotive, new VSucc(node, n)))
+                            Type.of(Eval.vApp(vMotive, n)),
+                            _ -> Type.of(Eval.vApp(vMotive, new VSucc(node, n)))
                     ))
             ));
             InferCheck.check(depth, ctx, globals, step, stepType);
@@ -175,7 +175,7 @@ public final class IndNat {
             InferCheck.check(depth, ctx, globals, scrut, natType);
 
             Value vScrut = Eval.eval(scrut, globals.values());
-            return new Type(Eval.vApp(vMotive, vScrut));
+            return Type.of(Eval.vApp(vMotive, vScrut));
         }
 
         @Override

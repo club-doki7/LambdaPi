@@ -206,20 +206,20 @@ public sealed interface Term {
         }
     }
 
-    interface IDynTermBase<T> {
+    interface ITermFormer<T> {
         Value eval(ConsList<Value> env, Map<String, Value> globals);
 
         T subst(int depth, Term.Free r);
     }
 
-    non-sealed interface CheckableTF extends Term.Checkable, IDynTermBase<CheckableTF> {
+    non-sealed interface CheckableTF extends Term.Checkable, ITermFormer<CheckableTF> {
         void check(int depth,
                    ConsList<Pair<Name.Local, Type>> ctx,
                    Globals globals,
                    Type expected) throws TypeCheckException;
     }
 
-    non-sealed interface InferableTF extends Term.Inferable, IDynTermBase<InferableTF> {
+    non-sealed interface InferableTF extends Term.Inferable, ITermFormer<InferableTF> {
         Type infer(int depth,
                    ConsList<Pair<Name.Local, Type>> ctx,
                    Globals globals) throws TypeCheckException;
