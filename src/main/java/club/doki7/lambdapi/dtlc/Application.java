@@ -113,7 +113,7 @@ public final class Application implements AsciiColor {
                 System.out.println(ANSI_RED + "Error: " + e.getMessage() + ANSI_RESET);
             } catch (Exception e) {
                 System.out.println(ANSI_RED + "Unexpected error: " + e.getMessage() + ANSI_RESET);
-                e.printStackTrace();
+                e.printStackTrace(System.out);
             }
         }
 

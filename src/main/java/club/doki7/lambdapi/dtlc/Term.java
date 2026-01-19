@@ -1,16 +1,20 @@
 package club.doki7.lambdapi.dtlc;
 
 import club.doki7.lambdapi.common.Name;
+import club.doki7.lambdapi.exc.TypeCheckException;
 import club.doki7.lambdapi.syntax.Node;
+import club.doki7.lambdapi.util.ConsList;
+import club.doki7.lambdapi.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
 import java.util.Objects;
 
 public sealed interface Term {
     @NotNull Node node();
 
-    sealed interface Inferable extends Term permits Ann, Star, Pi, Bound, Free, App {}
-    sealed interface Checkable extends Term permits Inf, Lam {}
+    sealed interface Inferable extends Term permits Ann, Star, Pi, Bound, Free, App, InferableTF {}
+    sealed interface Checkable extends Term permits Inf, Lam, CheckableTF {}
 
     record Ann(@NotNull Node node, @NotNull Checkable term, @NotNull Checkable annotation)
             implements Inferable
@@ -200,5 +204,24 @@ public sealed interface Term {
         public @NotNull String toString() {
             return "λ " + body;
         }
+    }
+
+    interface IDynTermBase<T> {
+        Value eval(ConsList<Value> env, Map<String, Value> globals);
+
+        T subst(int depth, Term.Free r);
+    }
+
+    non-sealed interface CheckableTF extends Term.Checkable, IDynTermBase<CheckableTF> {
+        void check(int depth,
+                   ConsList<Pair<Name.Local, Type>> ctx,
+                   Globals globals,
+                   Type expected) throws TypeCheckException;
+    }
+
+    non-sealed interface InferableTF extends Term.Inferable, IDynTermBase<InferableTF> {
+        Type infer(int depth,
+                   ConsList<Pair<Name.Local, Type>> ctx,
+                   Globals globals) throws TypeCheckException;
     }
 }

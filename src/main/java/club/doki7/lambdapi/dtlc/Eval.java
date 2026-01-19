@@ -17,7 +17,7 @@ public final class Eval {
         return reify(0, value);
     }
 
-    private static Value eval(Term term, ConsList<Value> env, Map<String, Value> globals) {
+    public static Value eval(Term term, ConsList<Value> env, Map<String, Value> globals) {
         return switch (term) {
             case Term.Ann(Node _, Term e, Term _) -> eval(e, env, globals);
             case Term.Free(Node node, Name name) -> {
@@ -50,19 +50,22 @@ public final class Eval {
                     Type.of(eval(in, env, globals)),
                     x -> Type.of(eval(out, ConsList.cons(x.value(), env), globals))
             );
+            case Term.InferableTF tf -> tf.eval(env, globals);
+            case Term.CheckableTF tf -> tf.eval(env, globals);
         };
     }
 
-    private static @NotNull Value vApp(Value func, Value arg) {
+    public static @NotNull Value vApp(Value func, Value arg) {
         return switch (func) {
             case Value.VLam(Node _, Function<Value, Value> lam) -> lam.apply(arg);
             case Value.VNeutral n -> new Value.NApp(n.node(), n, arg);
+            case Value.CValue cv -> cv.vApp(arg);
             case Value.VPi _ -> throw new IllegalStateException("Should not apply a Pi type");
             case Value.VStar _ -> throw new IllegalStateException("Should not apply a Star type");
         };
     }
 
-    private static @NotNull Term.Checkable reify(int depth, Value value) {
+    public static @NotNull Term.Checkable reify(int depth, Value value) {
         return switch (value) {
             case Value.VLam(Node node, Function<Value, Value> lam) -> new Term.Lam(
                     node,
@@ -83,10 +86,11 @@ public final class Eval {
                     )
             );
             case Value.VStar(Node node) -> new Term.Inf(node, new Term.Star(node));
+            case Value.CValue cv -> cv.reify(depth);
         };
     }
 
-    private static Term.Inferable neutralReify(int depth, Value.VNeutral n) {
+    public static Term.Inferable neutralReify(int depth, Value.VNeutral n) {
         return switch (n) {
             case Value.NFree(Node node, Name name) -> {
                 if (name instanceof Name.Quote(int k)) {
@@ -100,6 +104,7 @@ public final class Eval {
                     neutralReify(depth, func),
                     reify(depth, arg)
             );
+            case Value.CNeutral cn -> cn.neutralReify(depth);
         };
     }
 }

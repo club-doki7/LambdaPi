@@ -17,7 +17,7 @@ public final class InferCheck {
         return infer(0, ConsList.nil(), globals, inferable);
     }
 
-    private static @NotNull Type infer(
+    public static @NotNull Type infer(
             int depth,
             ConsList<Pair<Name.Local, Type>> ctx,
             Globals globals,
@@ -80,10 +80,11 @@ public final class InferCheck {
             case Term.Bound _ -> throw new IllegalStateException(
                     "Unexpected bound variable in type checking phase"
             );
+            case Term.InferableTF tf -> tf.infer(depth, ctx, globals);
         };
     }
 
-    private static void check(
+    public static void check(
             int depth,
             ConsList<Pair<Name.Local, Type>> ctx,
             Globals globals,
@@ -122,10 +123,11 @@ public final class InferCheck {
                         out.apply(Type.of(Value.vFree(node, local)))
                 );
             }
+            case Term.CheckableTF tf -> tf.check(depth, ctx, globals, expected);
         }
     }
 
-    private static Term.Inferable subst(int depth, Term.Free r, Term.Inferable inferable) {
+    public static Term.Inferable subst(int depth, Term.Free r, Term.Inferable inferable) {
         return switch (inferable) {
             case Term.Ann(Node node, Term.Checkable term, Term.Checkable ann) -> new Term.Ann(
                     node,
@@ -145,10 +147,11 @@ public final class InferCheck {
                     subst(depth, r, in),
                     subst(depth + 1, r, out)
             );
+            case Term.InferableTF tf -> tf.subst(depth, r);
         };
     }
 
-    private static Term.Checkable subst(int depth, Term.Free r, Term.Checkable checkable) {
+    public static Term.Checkable subst(int depth, Term.Free r, Term.Checkable checkable) {
         return switch (checkable) {
             case Term.Inf(Node node, Term.Inferable term) -> new Term.Inf(
                     node,
@@ -158,6 +161,7 @@ public final class InferCheck {
                     node,
                     subst(depth + 1, r, body)
             );
+            case Term.CheckableTF tf -> tf.subst(depth, r);
         };
     }
 }

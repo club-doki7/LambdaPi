@@ -58,7 +58,7 @@ public sealed interface Value {
         }
     }
 
-    sealed interface VNeutral extends Value permits NFree, NApp {}
+    sealed interface VNeutral extends Value permits NFree, NApp, CNeutral {}
 
     record NFree(@NotNull Node node, @NotNull Name name) implements VNeutral {
         @Override
@@ -78,5 +78,15 @@ public sealed interface Value {
 
     static @NotNull Value vFree(@NotNull Node node, @NotNull Name name) {
         return new NFree(node, name);
+    }
+
+    non-sealed interface CValue extends Value {
+        @NotNull Term.Checkable reify(int depth);
+
+        @NotNull Value vApp(Value arg);
+    }
+
+    non-sealed interface CNeutral extends VNeutral {
+        @NotNull Term.Inferable neutralReify(int depth);
     }
 }
