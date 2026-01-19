@@ -45,10 +45,18 @@ public final class Elab {
                     yield new Term.Bound(node, index);
                 }
             }
-            case Node.App(Node func, Node arg) -> {
+            case Node.App(Node func, List<Node> args) -> {
                 Term.Inferable elabFunc = elabInferable(func, ctx);
-                Term.Checkable elabArg =  elabCheckable(arg,  ctx);
-                yield new Term.App(node, elabFunc, elabArg);
+                Term.Checkable elabArg;
+                Term.App app;
+
+                for (Node arg : args) {
+                    elabArg = elabCheckable(arg, ctx);
+                    app = new Term.App(node, elabFunc, elabArg);
+                    elabFunc = app;
+                }
+
+                yield elabFunc;
             }
             case Node.Lam _ -> throw new ElabException(
                     node.location(),

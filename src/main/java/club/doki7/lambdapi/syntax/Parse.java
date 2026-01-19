@@ -159,14 +159,23 @@ public final class Parse {
 
     private @NotNull Node parseAppExpr() throws ParseException {
         Node left = parseSimpleExpr();
+        Node right = tryParseSimpleExpr();
+        if (right == null) {
+            return left;
+        }
+
+        List<Node> args = new ArrayList<>();
+        args.add(right);
+
         while (true) {
-            Node right = tryParseSimpleExpr();
+            right = tryParseSimpleExpr();
             if (right == null) {
                 break;
             }
-            left = new Node.App(left, right);
+            args.add(right);
         }
-        return left;
+
+        return new Node.App(left, args);
     }
 
     private @Nullable Node tryParseSimpleExpr() throws ParseException {

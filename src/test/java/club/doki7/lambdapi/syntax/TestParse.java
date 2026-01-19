@@ -71,12 +71,12 @@ public class TestParse {
     }
 
     @Test
-    void testParseApplicationLeftAssociative() throws ParseException {
-        // f x y 应该解析为 (f x) y
+    void testParseApplicationSpine() throws ParseException {
+        // f x y 能正确地解析为一个 Node
         Node result = parseExpr("f x y");
         Node expected = new Node.App(
-                new Node.App(new Node.Var("f"), new Node.Var("x")),
-                new Node.Var("y")
+                new Node.Var("f"),
+                List.of(new Node.Var("x"), new Node.Var("y"))
         );
         Assertions.assertEquals(expected, result);
     }

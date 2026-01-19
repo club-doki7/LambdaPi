@@ -4,6 +4,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
+import java.util.List;
+
 /// 简单类型 Lambda 演算 λ<sub>→</sub> 和依值类型 Lambda 演算 λ<sub>Π</sub> 的抽象语法树/核心语法节点
 ///
 /// {@snippet lang="bnf" :
@@ -100,7 +102,12 @@ public sealed interface Node {
         }
     }
 
-    record App(@NotNull Node func, @NotNull Node arg) implements Node {
+    record App(@NotNull Node func, @NotNull List<@NotNull Node> args) implements Node {
+        @TestOnly
+        public App(@NotNull Node func, @NotNull Node arg) {
+            this(func, List.of(arg));
+        }
+
         @Override
         public @NotNull Token location() {
             return func.location();
@@ -117,10 +124,12 @@ public sealed interface Node {
 
             sb.append(" ");
 
-            if (arg instanceof App || arg instanceof Lam || arg instanceof Pi || arg instanceof Ann) {
-                sb.append("(").append(arg).append(")");
-            } else {
-                sb.append(arg);
+            for (var arg : args) {
+                if (arg instanceof App || arg instanceof Lam || arg instanceof Pi || arg instanceof Ann) {
+                    sb.append("(").append(arg).append(")");
+                } else {
+                    sb.append(arg);
+                }
             }
 
             return sb.toString();
