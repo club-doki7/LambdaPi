@@ -127,9 +127,9 @@ public final class IndNat {
             if (current instanceof Term.Inf(Node _, Zero _)) {
                 return Integer.toString(sCounter);
             } else if (sCounter == 1) {
-                return "(S " + pred + ")";
+                return "(suc " + pred + ")";
             } else {
-                return "(S_" + sCounter + " " + current + ")";
+                return "(suc_" + sCounter + " " + current + ")";
             }
         }
     }
