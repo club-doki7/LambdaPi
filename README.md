@@ -4,7 +4,7 @@ Yet another (modern) Java implementation of the famous [LambdaPi.pdf](https://ww
 
 ## Progress
 
-- [ ] Java implementation
+- [x] Java implementation
   - [x] Tokenize
   - [x] Syntax
     - [x] Pretty printing
@@ -19,7 +19,7 @@ Yet another (modern) Java implementation of the famous [LambdaPi.pdf](https://ww
     - [x] Evaluator + Type checker
     - [x] Quoting
   - [x] Natural number
-  - [ ] Vector
+  - [x] Vector
 - [ ] Python implementation
   - This is a garbage programming language, but I think there might should be one.
 
