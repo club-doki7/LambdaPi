@@ -18,7 +18,7 @@ Yet another (modern) Java implementation of the famous [LambdaPi.pdf](https://ww
     - [x] Representation
     - [x] Evaluator + Type checker
     - [x] Quoting
-  - [ ] Natural number
+  - [x] Natural number
   - [ ] Vector
 - [ ] Python implementation
   - This is a garbage programming language, but I think there might should be one.

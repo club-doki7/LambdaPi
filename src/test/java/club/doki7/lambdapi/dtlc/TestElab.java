@@ -14,7 +14,7 @@ public class TestElab {
     void testElabFreeVariable() throws ElabException {
         // 自由变量 x
         Node node = new Node.Var("x");
-        Term result = Elab.elab(node);
+        Term result = new Elab().elab(node);
         Term.Inferable expected = new Term.Free(node, new Name.Global("x"));
         assertEquals(expected, result);
     }
@@ -25,7 +25,7 @@ public class TestElab {
     void testElabStar() throws ElabException {
         // *
         Node node = new Node.Aster();
-        Term result = Elab.elab(node);
+        Term result = new Elab().elab(node);
         Term.Inferable expected = new Term.Star(node);
         assertEquals(expected, result);
     }
@@ -37,7 +37,7 @@ public class TestElab {
         Node aster = new Node.Aster();
         Node ann = new Node.Ann(typeA, aster);
 
-        Term result = Elab.elab(ann);
+        Term result = new Elab().elab(ann);
 
         Term.Checkable expectedA = new Term.Inf(typeA, new Term.Free(typeA, new Name.Global("A")));
         Term.Checkable expectedAster = new Term.Inf(aster, new Term.Star(aster));
@@ -57,7 +57,7 @@ public class TestElab {
         Node funType = new Node.Pi((String) null, typeA, typeA);
         Node ann = new Node.Ann(lam, funType);
 
-        Term result = Elab.elab(ann);
+        Term result = new Elab().elab(ann);
 
         // 注意：lambda 体中的 x 应该变成 Bound(0)
         Term.Checkable expectedBody = new Term.Inf(lamBody, new Term.Bound(lamBody, 0));
@@ -82,7 +82,7 @@ public class TestElab {
         Node funType = new Node.Pi((String) null, typeA, new Node.Pi((String) null, typeB, typeA));
         Node ann = new Node.Ann(lam, funType);
 
-        Term result = Elab.elab(ann);
+        Term result = new Elab().elab(ann);
 
         // x 在 innerLam 体中是 Bound(1)，因为 y 是 Bound(0)
         Term.Checkable expectedXVar = new Term.Inf(xVar, new Term.Bound(xVar, 1));
@@ -110,7 +110,7 @@ public class TestElab {
         Node xVar = new Node.Var("x");
         Node app = new Node.App(fVar, xVar);
 
-        Term result = Elab.elab(app);
+        Term result = new Elab().elab(app);
 
         Term.Inferable expectedF = new Term.Free(fVar, new Name.Global("f"));
         Term.Checkable expectedX = new Term.Inf(xVar, new Term.Free(xVar, new Name.Global("x")));
@@ -128,7 +128,7 @@ public class TestElab {
         Node innerApp = new Node.App(fVar, xVar);
         Node app = new Node.App(innerApp, yVar);
 
-        Term result = Elab.elab(app);
+        Term result = new Elab().elab(app);
 
         Term.Inferable expectedF = new Term.Free(fVar, new Name.Global("f"));
         Term.Checkable expectedX = new Term.Inf(xVar, new Term.Free(xVar, new Name.Global("x")));
@@ -148,7 +148,7 @@ public class TestElab {
         Node typeB = new Node.Var("B");
         Node pi = new Node.Pi((String) null, typeA, typeB);
 
-        Term result = Elab.elab(pi);
+        Term result = new Elab().elab(pi);
 
         Term.Checkable expectedA = new Term.Inf(typeA, new Term.Free(typeA, new Name.Global("A")));
         Term.Checkable expectedB = new Term.Inf(typeB, new Term.Free(typeB, new Name.Global("B")));
@@ -164,7 +164,7 @@ public class TestElab {
         Node typeB = new Node.Var("B");
         Node pi = new Node.Pi("x", typeA, typeB);
 
-        Term result = Elab.elab(pi);
+        Term result = new Elab().elab(pi);
 
         Term.Checkable expectedA = new Term.Inf(typeA, new Term.Free(typeA, new Name.Global("A")));
         // B 是自由变量（在这个例子中），因为我们没有引用 x
@@ -181,7 +181,7 @@ public class TestElab {
         Node xVar = new Node.Var("x");
         Node pi = new Node.Pi("x", typeA, xVar);
 
-        Term result = Elab.elab(pi);
+        Term result = new Elab().elab(pi);
 
         Term.Checkable expectedA = new Term.Inf(typeA, new Term.Free(typeA, new Name.Global("A")));
         // x 应该变成 Bound(0)，因为它被 Pi 绑定
@@ -200,7 +200,7 @@ public class TestElab {
         Node innerPi = new Node.Pi("x", typeA2, typeA3);
         Node outerPi = new Node.Pi("A", aster, innerPi);
 
-        Term result = Elab.elab(outerPi);
+        Term result = new Elab().elab(outerPi);
 
         Term.Checkable expectedAster = new Term.Inf(aster, new Term.Star(aster));
         // 内层 Pi：∀(x : A) → A
@@ -225,7 +225,7 @@ public class TestElab {
         Node funType = new Node.Pi((String) null, typeA, typeA);
         Node ann = new Node.Ann(lam, funType);
 
-        Term result = Elab.elab(ann);
+        Term result = new Elab().elab(ann);
 
         // 验证体中的变量是 Bound(0)
         Term.Ann annTerm = (Term.Ann) result;
@@ -248,7 +248,7 @@ public class TestElab {
         Node funType = new Node.Pi((String) null, typeA, typeB);
         Node ann = new Node.Ann(lam, funType);
 
-        Term result = Elab.elab(ann);
+        Term result = new Elab().elab(ann);
 
         Term.Inferable expectedF = new Term.Free(fVar, new Name.Global("f"));
         Term.Checkable expectedX = new Term.Inf(xVar, new Term.Bound(xVar, 0));
@@ -276,7 +276,7 @@ public class TestElab {
         Node innerPi = new Node.Pi("y", x1, x2);
         Node outerPi = new Node.Pi("x", typeA, innerPi);
 
-        Term result = Elab.elab(outerPi);
+        Term result = new Elab().elab(outerPi);
 
         Term.Checkable expectedA = new Term.Inf(typeA, new Term.Free(typeA, new Name.Global("A")));
         // 内层 Pi 体中：x1 是 Bound(0)，x2 是 Bound(1)
@@ -306,7 +306,7 @@ public class TestElab {
 
         Node ann = new Node.Ann(outerLam, outerPi);
 
-        Term result = Elab.elab(ann);
+        Term result = new Elab().elab(ann);
 
         // 外层 lambda 体：λx. x，其中 x 是 Bound(0)
         Term.Checkable expectedXBody = new Term.Inf(xVar, new Term.Bound(xVar, 0));
@@ -338,7 +338,7 @@ public class TestElab {
         Node funType = new Node.Pi((String) null, aster1, aster2);
         Node ann = new Node.Ann(lam, funType);
 
-        Term result = Elab.elab(ann);
+        Term result = new Elab().elab(ann);
 
         // Lambda 体：A → A，实质上是 ∀(_ : A) → A。因为 ∀ 引入了额外的一层绑定，所以最内层的 A 变成 Bound(1)
         Term.Checkable expectedA1 = new Term.Inf(typeA1, new Term.Bound(typeA1, 0));
@@ -365,7 +365,7 @@ public class TestElab {
         Node typeB = new Node.Var("B");
         Node pi = new Node.Pi((String) null, typeA, typeB);
 
-        Term result = Elab.elab(pi);
+        Term result = new Elab().elab(pi);
 
         Term.Checkable expectedA = new Term.Inf(typeA, new Term.Free(typeA, new Name.Global("A")));
         Term.Checkable expectedB = new Term.Inf(typeB, new Term.Free(typeB, new Name.Global("B")));
@@ -381,7 +381,7 @@ public class TestElab {
         // λx. x 没有类型注解，应该抛出异常
         Node lam = new Node.Lam("x", new Node.Var("x"));
 
-        ElabException ex = assertThrows(ElabException.class, () -> Elab.elab(lam));
+        ElabException ex = assertThrows(ElabException.class, () -> new Elab().elab(lam));
         assertTrue(ex.getMessage().contains("lambda expression must be annotated"));
     }
 
@@ -390,7 +390,7 @@ public class TestElab {
         // (λx. λy. x) 外层没有类型注解，应该抛出异常
         Node lam = new Node.Lam("x", new Node.Lam("y", new Node.Var("x")));
 
-        ElabException ex = assertThrows(ElabException.class, () -> Elab.elab(lam));
+        ElabException ex = assertThrows(ElabException.class, () -> new Elab().elab(lam));
         assertTrue(ex.getMessage().contains("lambda expression must be annotated"));
     }
 }

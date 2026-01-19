@@ -6,6 +6,7 @@ import club.doki7.lambdapi.exc.ElabException;
 import club.doki7.lambdapi.exc.LPiException;
 import club.doki7.lambdapi.exc.ParseException;
 import club.doki7.lambdapi.exc.TypeCheckException;
+import club.doki7.lambdapi.ind.IndNat;
 import club.doki7.lambdapi.syntax.Node;
 import club.doki7.lambdapi.syntax.PNode;
 import club.doki7.lambdapi.syntax.Parse;
@@ -21,6 +22,12 @@ import java.util.Scanner;
 
 public final class Application implements AsciiColor {
     static void main() {
+        Elab elab = new Elab();
+        elab.registerTermFormer(IndNat.Nat.class);
+        elab.registerTermFormer(IndNat.Zero.class);
+        elab.registerTermFormer(IndNat.Succ.class);
+        elab.registerTermFormer(IndNat.NatElim.class);
+
         Globals globals = Globals.empty();
 
         System.out.println("=== Dependent Typed Lambda Calculus ===");
@@ -30,6 +37,7 @@ public final class Application implements AsciiColor {
         System.out.println("  check <expr>             - Type check and evaluate expression");
         System.out.println("  <expr>                   - Type check and evaluate expression");
         System.out.println("  :env                     - Show current environment and type context");
+        System.out.println("  :tf                      - Show available term formers");
         System.out.println("  :include <file>          - Load and execute file");
         System.out.println("  :clear, :cls             - Clear environment and type context");
         System.out.println("  :quit, :q                - Exit REPL");
@@ -93,12 +101,28 @@ public final class Application implements AsciiColor {
                         System.out.println(ANSI_GREEN + "Environment is empty." + ANSI_RESET);
                     }
                     continue;
+                case ":tf":
+                    if (!elab.termFormers.isEmpty()) {
+                        for (Elab.TermFormer former : elab.termFormers.values()) {
+                            System.out.println(
+                                    ANSI_PURPLE
+                                    + "\t"
+                                    + former.name()
+                                    + " "
+                                    + former.argsKind()
+                                    + ANSI_RESET
+                            );
+                        }
+                    } else {
+                        System.out.println(ANSI_PURPLE + "No term formers registered." + ANSI_RESET);
+                    }
+                    continue;
             }
 
             if (line.startsWith(":include ")) {
                 String filePath = line.substring(":include ".length()).trim();
                 try {
-                    includeFile(filePath, globals);
+                    includeFile(filePath, elab, globals);
                 } catch (IOException e) {
                     System.out.println(ANSI_RED + "Error reading file: " + e.getMessage() + ANSI_RESET);
                 } catch (LPiException e) {
@@ -108,7 +132,7 @@ public final class Application implements AsciiColor {
             }
 
             try {
-                processInput(line, globals);
+                processInput(line, elab, globals);
             } catch (LPiException e) {
                 System.out.println(ANSI_RED + "Error: " + e.getMessage() + ANSI_RESET);
             } catch (Exception e) {
@@ -128,6 +152,7 @@ public final class Application implements AsciiColor {
 
     private static void processInput(
             String input,
+            Elab elab,
             Globals globals
     ) throws ParseException, ElabException, TypeCheckException {
         ArrayList<Token> tokens = Token.tokenize(input);
@@ -140,12 +165,12 @@ public final class Application implements AsciiColor {
             && firstTokenKind != Token.Kind.KW_DEFUN
             && firstTokenKind != Token.Kind.KW_CHECK) {
             Node expr = Parse.parseExpr(tokens);
-            checkAndEval(expr, globals, false);
+            checkAndEval(expr, elab, globals, false);
         } else {
             PNode program = Parse.parseProgram(tokens);
             if (program instanceof PNode.Program(var items)) {
                 for (PNode item : items) {
-                    processDeclaration(item, globals);
+                    processDeclaration(item, elab, globals);
                 }
             }
         }
@@ -153,6 +178,7 @@ public final class Application implements AsciiColor {
 
     private static void processDeclaration(
             PNode decl,
+            Elab elab,
             Globals globals
     ) throws ElabException, TypeCheckException {
         switch (decl) {
@@ -162,7 +188,7 @@ public final class Application implements AsciiColor {
                         names.stream().map(t -> t.lexeme).toList()
                 );
 
-                Term typeTerm = Elab.elab(typeNode);
+                Term typeTerm = elab.elab(typeNode);
                 InferCheck.infer((Term.Inferable) typeTerm, globals);
                 Type type = Type.of(Eval.eval(typeTerm, globals.values()));
                 for (Token name : names) {
@@ -176,7 +202,7 @@ public final class Application implements AsciiColor {
                                    + ANSI_RESET);
             }
             case PNode.Defun(Token name, Node valueNode) -> {
-                Term term = Elab.elab(valueNode);
+                Term term = elab.elab(valueNode);
                 Type type = InferCheck.infer((Term.Inferable) term, globals);
                 Value value = Eval.eval(term, globals.values());
 
@@ -190,10 +216,10 @@ public final class Application implements AsciiColor {
                                    + "\n\t= " + Eval.reify(value)
                                    + ANSI_RESET);
             }
-            case PNode.Check(Node termNode) -> checkAndEval(termNode, globals, true);
+            case PNode.Check(Node termNode) -> checkAndEval(termNode, elab, globals, true);
             case PNode.Program(var items) -> {
                 for (PNode item : items) {
-                    processDeclaration(item, globals);
+                    processDeclaration(item, elab, globals);
                 }
             }
         }
@@ -201,6 +227,7 @@ public final class Application implements AsciiColor {
 
     private static void includeFile(
             String filePath,
+            Elab elab,
             Globals globals
     ) throws IOException, ParseException, ElabException, TypeCheckException {
         Path path = Path.of(filePath);
@@ -213,7 +240,7 @@ public final class Application implements AsciiColor {
         PNode program = Parse.parseProgram(tokens);
         if (program instanceof PNode.Program(var items)) {
             for (PNode item : items) {
-                processDeclaration(item, globals);
+                processDeclaration(item, elab, globals);
             }
         }
 
@@ -222,10 +249,11 @@ public final class Application implements AsciiColor {
 
     private static void checkAndEval(
             Node expr,
+            Elab elab,
             Globals globals,
             boolean explicitCheck
     ) throws ElabException, TypeCheckException {
-        Term term = Elab.elab(expr);
+        Term term = elab.elab(expr);
         Type type = InferCheck.infer((Term.Inferable) term, globals);
         Value value = Eval.eval(term, globals.values());
         Term normalForm = Eval.reify(value);
