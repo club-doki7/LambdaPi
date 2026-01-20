@@ -267,7 +267,8 @@ public final class Application implements AsciiColor {
             System.out.println(
                     ANSI_GREEN
                     + "checked " + expr + "\n"
-                    + "\t= " + normalForm + " : " + Eval.reify(type.value())
+                    + "\t= " + normalForm + "\n"
+                    + "\t: " + Eval.reify(type.value())
                     + ANSI_RESET
             );
         } else {
