@@ -10,17 +10,17 @@ public sealed interface Name {
         }
     }
 
-    record Local(int index) implements Name {
+    record Local(int depth) implements Name {
         @Override
         public @NotNull String toString() {
-            return DeBruijnIndex.superscriptNum('L', index);
+            return DeBruijnIndex.superscriptNum('L', depth);
         }
     }
 
-    record Quote(int index) implements Name {
+    record Quote(int depth) implements Name {
         @Override
         public @NotNull String toString() {
-            return DeBruijnIndex.superscriptNum('Q', index);
+            return DeBruijnIndex.superscriptNum('Q', depth);
         }
     }
 }
